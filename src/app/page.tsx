@@ -130,7 +130,7 @@ export default async function Command({ searchParams }: { searchParams: Promise<
 
           {/* The one thing to do next */}
           <section aria-labelledby="next-move" className="relative overflow-hidden rounded-2xl border border-sky/25 bg-gradient-to-br from-[#16224a] to-panel p-6 sm:p-8">
-            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 opacity-80"><Orb size={260} /></div>
+            <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 opacity-40 sm:-right-16 sm:-top-16 sm:opacity-80"><Orb size={260} /></div>
             <div className="relative max-w-xl">
               <p className="text-sm text-sky">Your next move</p>
               <h2 id="next-move" className="mt-2 text-2xl font-semibold leading-snug sm:text-[30px]">{move.title}</h2>
@@ -163,7 +163,7 @@ export default async function Command({ searchParams }: { searchParams: Promise<
               { label: "Interviews", v: n.interviews, href: "/?tab=jobs&status=active" },
               { label: "Due in 7 days", v: due7, href: "#deadlines", warn: due7 > 0 },
             ].map((k) => (
-              <Link key={k.label} href={k.href} className="press card px-4 py-3 hover:border-sky/50">
+              <Link key={k.label} href={k.href} className="press card px-4 py-3 last:col-span-2 hover:border-sky/50 sm:last:col-span-1">
                 <span className={`num block text-2xl font-semibold ${k.warn ? "text-amber" : "text-snow"}`}>{k.v}</span>
                 <span className="text-sm text-mist">{k.label}</span>
               </Link>

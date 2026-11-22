@@ -31,7 +31,7 @@ export function pickNextMove(jobs: MoveJob[], opps: MoveOpp[], now = Date.now())
     return {
       kind: "deadline",
       title: `Submit ${urgent.o.name}`,
-      reason: `It closes ${when} and it's still marked “${urgent.o.status}”.`,
+      reason: `It closes ${when} and you haven't marked it as submitted.`,
       href: urgent.o.url,
       oppId: urgent.o.id,
       due: urgent.o.deadline_date!,
