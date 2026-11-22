@@ -170,11 +170,11 @@ export default async function Command({ searchParams }: { searchParams: Promise<
             ))}
           </nav>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-            <section id="deadlines" aria-labelledby="deadlines-h" className="card p-5">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+            <section id="deadlines" aria-labelledby="deadlines-h" className="card min-w-0 p-5">
               <div className="flex items-baseline justify-between">
                 <h2 id="deadlines-h" className="font-medium">Deadlines</h2>
-                <span className="text-sm text-mist">next 30 days, Rome time</span>
+                <span className="hidden text-sm text-mist sm:inline">next 30 days, Rome time</span>
               </div>
               {dueSoon.length === 0 ? (
                 <p className="mt-4 text-mist">Nothing due in the next 30 days.</p>
@@ -184,7 +184,7 @@ export default async function Command({ searchParams }: { searchParams: Promise<
                     const d = daysLeft(o.deadline_date)!;
                     const tone = d <= 3 ? "text-amber" : d <= 7 ? "text-amber/80" : "text-mist";
                     return (
-                      <li key={o.id} className="grid grid-cols-[5.5rem_1fr_auto] items-baseline gap-3 border-t border-line/60 py-2.5 first:border-t-0">
+                      <li key={o.id} className="grid grid-cols-[4.75rem_minmax(0,1fr)_auto] items-baseline gap-3 border-t border-line/60 py-2.5 first:border-t-0">
                         <span className={`num text-sm ${tone}`}>{fmtDay(o.deadline_date!)}</span>
                         <span className="min-w-0">
                           {o.url ? <a href={o.url} target="_blank" rel="noopener noreferrer" className="hover:text-sky">{o.name}</a> : o.name}
@@ -199,7 +199,7 @@ export default async function Command({ searchParams }: { searchParams: Promise<
               {dueSoon.length > 12 && <Link href="/?tab=masters" className="mt-3 inline-block text-sm text-sky hover:underline">See all {dueSoon.length}</Link>}
             </section>
 
-            <section aria-labelledby="matches-h" className="card p-5">
+            <section aria-labelledby="matches-h" className="card min-w-0 p-5">
               <div className="flex items-baseline justify-between">
                 <h2 id="matches-h" className="font-medium">Best matches</h2>
                 <Link href="/?tab=jobs" className="text-sm text-sky hover:underline">All jobs</Link>
