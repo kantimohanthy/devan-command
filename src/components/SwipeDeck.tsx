@@ -51,7 +51,7 @@ function Card({ job, depth, onDecide }: { job: Job; depth: number; onDecide: (j:
   const skipGlow = useTransform(x, [-140, 0], [1, 0]);
   return (
     <motion.div
-      className="card absolute inset-0 flex cursor-grab flex-col justify-between p-6 active:cursor-grabbing"
+      className="absolute inset-0 flex cursor-grab flex-col justify-between rounded-[1.25rem] border border-line bg-panel p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)] active:cursor-grabbing"
       style={{ x, rotate, zIndex: 10 - depth }}
       initial={{ scale: 0.95, y: 12, opacity: 0 }}
       animate={{ scale: 1 - depth * 0.04, y: depth * 10, opacity: 1 }}
@@ -65,13 +65,13 @@ function Card({ job, depth, onDecide }: { job: Job; depth: number; onDecide: (j:
     >
       <motion.div style={{ opacity: applyGlow }} className="pointer-events-none absolute inset-0 rounded-[1.25rem] ring-2 ring-volt" />
       <motion.div style={{ opacity: skipGlow }} className="pointer-events-none absolute inset-0 rounded-[1.25rem] ring-2 ring-maroon" />
-      <div>
+      <div style={{ visibility: depth === 0 ? "visible" : "hidden" }}>
         <p className="text-xs uppercase tracking-widest text-sky">{job.mode}{job.contract ? ` · ${job.contract}` : ""}</p>
         <h3 className="mt-3 text-2xl font-semibold leading-tight">{job.title}</h3>
         <p className="mt-2 text-mist">{job.company}</p>
         {job.location && <p className="text-sm text-mist">{job.location}</p>}
       </div>
-      <p className="text-xs text-mist">{job.posted ? `Posted ${job.posted}` : "Date unknown"} · drag right to apply, left to skip</p>
+      <p className="text-xs text-mist" style={{ visibility: depth === 0 ? "visible" : "hidden" }}>{job.posted ? `Posted ${job.posted}` : "Date unknown"} · drag right to apply, left to skip</p>
     </motion.div>
   );
 }
