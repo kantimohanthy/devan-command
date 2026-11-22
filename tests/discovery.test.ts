@@ -20,7 +20,9 @@ const elig = (l: Parameters<typeof extractEligibility>[0]) => extractEligibility
 describe("registry", () => {
   it("registers the 14 boards and 5 watch employers", () => {
     expect(SOURCES.filter((s) => s.kind === "board")).toHaveLength(14);
-    expect(SOURCES.filter((s) => s.kind === "employer").map((s) => s.config?.board)).toEqual(["boomsupersonic", "neuralink", "unconventionalinc", "figureai", "colossalbiosciences"]);
+    expect(SOURCES.filter((s) => s.kind === "employer").map((s) => s.slug)).toEqual(["boom", "neuralink", "unconventional", "figure", "colossal"]);
+    expect(SOURCES.filter((s) => s.method === "greenhouse").map((s) => s.config?.board)).toEqual(["neuralink", "unconventionalinc", "figureai", "colossalbiosciences"]);
+    expect(sourceForHost("ats.rippling.com")?.slug).toBe("boom");
     expect(sourceForHost("app.welcometothejungle.com")?.slug).toBe("wttj");
     expect(sourceForHost("www.prospects.ac.uk")?.slug).toBe("prospects");
   });

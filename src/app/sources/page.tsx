@@ -48,7 +48,7 @@ export default async function SourcesPage() {
   const groups: [string, SourceDef[]][] = [
     ["Connected by API, RSS or MCP", SOURCES.filter((s) => s.kind === "board" && s.method !== "manual")],
     ["Employer watchlist", SOURCES.filter((s) => s.kind === "employer")],
-    ["Link import (automated access not verified)", SOURCES.filter((s) => s.method === "manual")],
+    ["Link import (automated access not verified)", SOURCES.filter((s) => s.kind === "board" && s.method === "manual")],
   ];
 
   return (
@@ -81,7 +81,7 @@ export default async function SourcesPage() {
                       <div className="flex flex-wrap items-baseline gap-x-3">
                         <a href={s.homepage} target="_blank" rel="noopener noreferrer" className="text-lg font-semibold hover:text-sky">{s.name}</a>
                         <span className={`text-sm ${c.tone}`}>{c.label}</span>
-                        <span className="text-xs uppercase tracking-widest text-mist">{s.method === "greenhouse" ? "Greenhouse API" : s.method.toUpperCase()}</span>
+                        <span className="text-xs uppercase tracking-widest text-mist">{s.method === "greenhouse" ? "Greenhouse API" : s.method === "manual" ? "Link import" : s.method.toUpperCase()}</span>
                       </div>
                       <p className="mt-1 text-sm text-mist">{s.methodNote}</p>
                       {s.terms && <p className="mt-1 text-xs text-mist">Rules followed: {s.terms}</p>}

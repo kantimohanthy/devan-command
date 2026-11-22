@@ -9,7 +9,7 @@ const ORDER: JobStatus[] = ["interview", "offer", "in_progress", "applied", "to_
 const SOURCE_NAME: Record<string, string> = {
   himalayas: "Himalayas", weworkremotely: "We Work Remotely", remotive: "Remotive", hiringcafe: "HiringCafe", wttj: "Welcome to the Jungle",
   ycombinator: "Y Combinator Jobs", accel: "Accel portfolio", workinstartups: "Work in Startups", flexa: "Flexa", higherin: "Higherin", grb: "GRB",
-  milkround: "Milkround", prospects: "Prospects", visajobs: "VisaJobs.uk", boom: "Boom Supersonic (Greenhouse)", neuralink: "Neuralink (Greenhouse)",
+  milkround: "Milkround", prospects: "Prospects", visajobs: "VisaJobs.uk", boom: "Boom Supersonic (Rippling page)", neuralink: "Neuralink (Greenhouse)",
   unconventional: "Unconventional AI (Greenhouse)", figure: "Figure (Greenhouse)", colossal: "Colossal (Greenhouse)", manual: "Pasted link",
 };
 const fmtDate = (d: string | null | undefined) => (d ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "Europe/Rome" }).format(new Date(d)) : null);

@@ -98,7 +98,6 @@ export const SOURCES: SourceDef[] = [
   })),
   ...(
     [
-      ["boom", "Boom Supersonic", "boomsupersonic", "https://boomsupersonic.com/careers"],
       ["neuralink", "Neuralink", "neuralink", "https://neuralink.com/careers"],
       ["unconventional", "Unconventional AI", "unconventionalinc", "https://unconv.ai/careers/"],
       ["figure", "Figure", "figureai", "https://www.figure.ai/careers"],
@@ -114,10 +113,25 @@ export const SOURCES: SourceDef[] = [
     docs: "https://developers.greenhouse.io/job-board.html",
     hosts: [new URL(careersUrl).hostname.replace(/^www\./, "")],
     automated: true,
-    minHoursBetweenSyncs: 1,
+    minHoursBetweenSyncs: 0.1,
     config: { board, careersUrl, careersCheckedOn: "2026-11-22" },
   })),
 ];
+
+// Boom left Greenhouse: its careers page now redirects (/go/jobs/<uuid>) to Rippling Recruiting.
+// Rippling's public board feed is not documented for third-party use, so Boom is link-import only.
+SOURCES.splice(SOURCES.findIndex((s) => s.kind === "employer"), 0, {
+  slug: "boom",
+  name: "Boom Supersonic",
+  kind: "employer",
+  method: "manual",
+  methodNote:
+    "Careers page now redirects to Rippling Recruiting (ats.rippling.com/boom-supersonic). Rippling's public board feed is undocumented for third parties, so DEVAN does not poll it. Paste a Boom job link and DEVAN reads that page.",
+  homepage: "https://boomsupersonic.com/careers",
+  hosts: ["boomsupersonic.com", "ats.rippling.com"],
+  automated: false,
+  config: { careersUrl: "https://boomsupersonic.com/careers", careersCheckedOn: "2026-11-22" },
+});
 
 export const sourceBySlug = (slug: string) => SOURCES.find((s) => s.slug === slug);
 
