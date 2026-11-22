@@ -1,0 +1,21 @@
+{
+  "id": "gmail_firecrawl_2026_11_22",
+  "title": "DEVAN checked your Gmail and found new jobs",
+  "summary": "Marks 2 jobs as applied, adds 3 applications from your inbox (ICEYE x2, World Economic Forum), adds 3 new Rome jobs from Firecrawl, and records Summer@EPFL and BoringSage as applied.",
+  "jobUpdates": [
+    { "company": "NavHire", "title": "Ciccio", "status": "applied", "applied_at": "2026-11-21", "why": "Indeed confirmation: Cameriere/a di Sala – Ciccio's Food" },
+    { "company": "The Ortus Club", "title": "Event", "status": "applied", "applied_at": "2026-11-21", "why": "LinkedIn: your application was sent to The Ortus Club" }
+  ],
+  "jobInserts": [
+    { "title": "ICEYE Intern Lab 2027 – Product Management", "company": "ICEYE", "location": "Espoo, Finland", "mode": "onsite", "contract": "Internship", "status": "applied", "applied_at": "2026-11-18", "notes": "Confirmed by ICEYE Hiring Team (Ashby) 18 Nov" },
+    { "title": "ICEYE Intern Lab 2027 – Missions Line of Business", "company": "ICEYE", "location": "Espoo, Finland", "mode": "onsite", "contract": "Internship", "status": "applied", "applied_at": "2026-11-18", "notes": "Confirmed by ICEYE Hiring Team (Ashby) 18 Nov" },
+    { "title": "Early Careers Programme, Spring 2027 Cohort", "company": "World Economic Forum", "location": "Geneva, Switzerland", "mode": "onsite", "contract": "Early careers", "status": "applied", "applied_at": "2026-11-22", "notes": "Confirmed by WEF Workday 22 Nov" },
+    { "title": "Network Engineer", "company": "Ali Professional", "location": "Rome (hybrid)", "mode": "hybrid", "contract": "Full-time", "posted": "2026-11-04", "status": "to_apply", "url": "https://jobs.workable.com/view/6Lmd2oseGUxRy6QD3BkyYd/hybrid-network-engineer-in-rome-at-ali-professional", "notes": "Found by Firecrawl, open on Workable 22 Nov" },
+    { "title": "IT Specialist – Airport Infrastructures", "company": "Aeroporti di Roma", "location": "Rome (Fiumicino)", "mode": "onsite", "contract": "Full-time · €45–55k", "posted": "2026-11-09", "status": "to_apply", "url": "https://iacrgs.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/requisitions/preview/270", "notes": "Found by Firecrawl via Indeed (not yet confirmed on ADR's board). Stretch role" },
+    { "title": "IT Specialist (Middle) – Supporto Tecnico", "company": "Assist Digital", "location": "Rome", "mode": "onsite", "contract": "Full-time · €30–35k", "posted": "2026-11-09", "status": "to_apply", "url": "https://app.ncoreplat.com/jobsharingredirect/818140/it-specialist-middle-area-supporto-tecnico-it/italia?type=2&platform=29&sharing=5282906&source=Indeed", "notes": "Found by Firecrawl via Indeed. Check if Italian is required" }
+  ],
+  "opportunityUpserts": [
+    { "name": "Summer@EPFL Research Internship 2027", "category": "Summer schools", "type": "Research internship", "status": "Applied", "url": "https://summer.epfl.ch" },
+    { "name": "BoringSage Summer Student Scholarship Program", "category": "Funding – International", "type": "Scholarship", "status": "Applied" }
+  ]
+}

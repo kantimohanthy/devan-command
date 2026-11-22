@@ -6,6 +6,7 @@ import OpportunityList, { daysLeft, type Opp } from "@/components/OpportunityLis
 import { AddJobForm, NoteForm } from "@/components/Forms";
 import { requireOwner } from "@/lib/supabase/server";
 import { importStarterJobs, markNotificationRead, signOut } from "./actions";
+import { applySync, syncPending } from "./sync-actions";
 import type { Job, Note, Notification } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +45,7 @@ export default async function Command({ searchParams }: { searchParams: Promise<
     supabase.from("notes").select("id,body,created_at").order("created_at", { ascending: false }).limit(50),
     supabase.from("notifications").select("id,kind,title,body,created_at,read_at").is("read_at", null).order("created_at", { ascending: false }).limit(10),
   ]);
+  const pending = await syncPending();
   const allJobs = (jobs ?? []) as Job[];
   const allOpps = (opps ?? []) as Opp[];
   const count = (s: Job["status"]) => allJobs.filter((j) => j.status === s).length;
@@ -96,6 +98,15 @@ export default async function Command({ searchParams }: { searchParams: Promise<
 
       {tab === "today" && (
         <div className="mt-6 flex flex-col gap-10">
+          {pending && (
+            <form action={applySync} className="card flex flex-col gap-3 border-volt/60 p-5 sm:flex-row sm:items-center">
+              <div className="flex-1">
+                <p className="font-semibold text-volt">{pending.title}</p>
+                <p className="mt-1 text-sm text-mist">{pending.summary}</p>
+              </div>
+              <button className="press shrink-0 rounded-xl bg-volt px-5 py-3 font-semibold text-void">Update tracker</button>
+            </form>
+          )}
           {notifs && notifs.length > 0 && (
             <section className="flex flex-col gap-2">
               {(notifs as Notification[]).map((n) => (
