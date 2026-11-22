@@ -7,9 +7,21 @@ import { AddJobForm, NoteForm } from "@/components/Forms";
 import { requireOwner } from "@/lib/supabase/server";
 import { importStarterJobs, markNotificationRead, signOut } from "./actions";
 import { applySync, syncPending } from "./sync-actions";
-import type { Job, Note, Notification } from "@/lib/types";
+import type { Job, JobSourceLink, Note, Notification, SponsorCheck } from "@/lib/types";
+import { applyFilters, parseCommand, type JobFilters } from "@/lib/discovery/command";
+import { sponsorStance } from "@/lib/discovery/sponsor";
+import { WATCH_SLUGS } from "@/lib/discovery/registry";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+export const preferredRegion = "fra1";
+
+const QUICK: { id: string; label: string; f: JobFilters }[] = [
+  { id: "shortlist", label: "Shortlisted", f: { shortlisted: true } },
+  { id: "italy", label: "Confirmed from Italy", f: { italy: "confirmed" } },
+  { id: "watch", label: "Watchlist employers", f: { watchlist: true } },
+  { id: "new", label: "New this week", f: { newWithinDays: 7 } },
+];
 
 function greeting() {
   const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Europe/Rome" }).format(new Date()));
@@ -34,19 +46,32 @@ const TABS = [
   { id: "notes", label: "Notepad" },
 ] as const;
 
-export default async function Command({ searchParams }: { searchParams: Promise<{ tab?: string; c?: string; all?: string }> }) {
+export default async function Command({ searchParams }: { searchParams: Promise<{ tab?: string; c?: string; all?: string; cmd?: string; f?: string }> }) {
   const { supabase } = await requireOwner();
   const sp = await searchParams;
-  const tab = TABS.some((t) => t.id === sp.tab) ? sp.tab! : "today";
+  const cmd = (sp.cmd ?? "").slice(0, 300);
+  const parsed = cmd ? parseCommand(cmd) : null;
+  const tab = parsed ? "jobs" : TABS.some((t) => t.id === sp.tab) ? sp.tab! : "today";
 
   const [{ data: jobs }, { data: opps }, { data: notes }, { data: notifs }] = await Promise.all([
-    supabase.from("jobs").select("id,title,company,location,mode,contract,url,posted,status,applied_at").order("posted", { ascending: false, nullsFirst: false }),
+    supabase.from("jobs").select("id,title,company,location,mode,contract,url,posted,status,applied_at,official_url,shortlisted,italy_status,eligibility,compensation,sponsorship,experience_level,employment_type,description_excerpt,listing_expires_at,first_seen,last_checked,source_status").order("posted", { ascending: false, nullsFirst: false }),
     supabase.from("opportunities").select("id,name,type,category,eligibility,requirements,deadline,deadline_date,funding,status,url,verified").order("deadline_date", { ascending: true, nullsFirst: false }),
     supabase.from("notes").select("id,body,created_at").order("created_at", { ascending: false }).limit(50),
     supabase.from("notifications").select("id,kind,title,body,created_at,read_at").is("read_at", null).order("created_at", { ascending: false }).limit(10),
   ]);
   const pending = await syncPending();
-  const allJobs = (jobs ?? []) as Job[];
+  const [{ data: linkRows }, { data: sponsorRows }] = await Promise.all([
+    supabase.from("job_sources").select("job_id,source_slug,external_id,discovery_url,official_url,first_seen,last_seen"),
+    supabase.from("uk_sponsor_checks").select("job_id,matched_name,town,rating,route,register_file,confidence,needs_review,candidates,checked_at").order("checked_at", { ascending: false }),
+  ]);
+  const linksBy = new Map<string, JobSourceLink[]>();
+  for (const l of (linkRows ?? []) as (JobSourceLink & { job_id: string })[]) linksBy.set(l.job_id, [...(linksBy.get(l.job_id) ?? []), l]);
+  const sponsorBy = new Map<string, SponsorCheck>();
+  for (const r of (sponsorRows ?? []) as (SponsorCheck & { job_id: string })[]) if (!sponsorBy.has(r.job_id)) sponsorBy.set(r.job_id, r);
+  const allJobs = ((jobs ?? []) as Job[]).map((j) => ({ ...j, links: linksBy.get(j.id) ?? [], sources: (linksBy.get(j.id) ?? []).map((l) => l.source_slug), sponsorCheck: sponsorBy.get(j.id) ?? null }));
+  const quick = QUICK.find((q) => q.id === sp.f);
+  const activeFilters: JobFilters | null = parsed ? parsed.filters : quick ? quick.f : null;
+  const shownJobs = activeFilters ? applyFilters(allJobs.map((j) => ({ ...j, shortlisted: !!j.shortlisted, italy_status: j.italy_status ?? null, experience_level: j.experience_level ?? null, compensation: j.compensation ?? null, description_excerpt: j.description_excerpt ?? null, sponsorship: j.sponsorship ?? null, first_seen: j.first_seen ?? null, listing_expires_at: j.listing_expires_at ?? null })), activeFilters, WATCH_SLUGS, sponsorStance) : allJobs;
   const allOpps = (opps ?? []) as Opp[];
   const count = (s: Job["status"]) => allJobs.filter((j) => j.status === s).length;
   const deck = allJobs.filter((j) => j.status === "to_apply");
@@ -74,6 +99,7 @@ export default async function Command({ searchParams }: { searchParams: Promise<
       <header className="flex items-center justify-between">
         <span className="wordmark text-2xl">devan</span>
         <nav className="flex items-center gap-5 text-sm">
+          <Link href="/sources" className="text-mist hover:text-snow">Sources</Link>
           <Link href="/import" className="text-mist hover:text-snow">Import</Link>
           <form action={signOut}><button className="press text-mist hover:text-snow">Lock</button></form>
         </nav>
@@ -85,6 +111,13 @@ export default async function Command({ searchParams }: { searchParams: Promise<
         <p className="mt-2 text-mist">
           {deck.length} jobs to review · {count("applied")} applied · {count("interview")} interviews · {dueSoon.length} deadlines in 30 days
         </p>
+        <form action="/" method="get" className="mt-6 flex w-full max-w-xl gap-2" role="search">
+          <label htmlFor="cmd" className="sr-only">Ask DEVAN</label>
+          <input id="cmd" name="cmd" defaultValue={cmd} maxLength={300} autoComplete="off"
+            placeholder="Find paid junior Python or backend roles I can do from Rome"
+            className="min-w-0 flex-1 rounded-xl border border-line bg-ink px-4 py-3 text-sm outline-none focus:border-sky" />
+          <button className="press rounded-xl bg-volt px-4 py-3 text-sm font-semibold text-void">Go</button>
+        </form>
       </section>
 
       <nav className="sticky top-0 z-20 -mx-5 mt-8 flex gap-2 overflow-x-auto bg-void/90 px-5 py-3 backdrop-blur">
@@ -160,20 +193,39 @@ export default async function Command({ searchParams }: { searchParams: Promise<
 
       {tab === "jobs" && (
         <div className="mt-6">
+          <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
+            <Link href="/?tab=jobs" className={`rounded-full border px-3 py-1 ${!activeFilters ? "border-sky text-sky" : "border-line text-mist"}`}>All</Link>
+            {QUICK.map((q) => (
+              <Link key={q.id} href={`/?tab=jobs&f=${q.id}`} className={`rounded-full border px-3 py-1 ${sp.f === q.id && !parsed ? "border-sky text-sky" : "border-line text-mist"}`}>{q.label}</Link>
+            ))}
+            <Link href="/sources" className="ml-auto text-xs text-mist hover:text-snow">Sources &amp; link import →</Link>
+          </div>
+          {parsed && (
+            <section className="card mb-8 p-5">
+              <p className="text-sm"><span className="text-mist">You asked:</span> {cmd}</p>
+              {parsed.readBack.length ? (
+                <ul className="mt-2 flex flex-wrap gap-2 text-xs">{parsed.readBack.map((r) => <li key={r} className="rounded-full border border-line px-2 py-1 text-mist">{r}</li>)}</ul>
+              ) : <p className="mt-2 text-xs text-mist">No filters recognised. Showing everything.</p>}
+              {parsed.notice && <p className="mt-3 text-sm text-[#ffcf70]">{parsed.notice}</p>}
+              <p className="mt-3 text-sm text-volt">{shownJobs.length} match{shownJobs.length === 1 ? "" : "es"}</p>
+            </section>
+          )}
           {allJobs.length === 0 ? (
             <section className="card flex flex-col items-center gap-4 p-8 text-center">
               <p>Your job tracker is empty.</p>
               <form action={importStarterJobs}><button className="press rounded-xl bg-volt px-5 py-3 font-semibold text-void">Import the 42 jobs from 21–22 Nov</button></form>
             </section>
           ) : (
-            <div className="grid gap-12 lg:grid-cols-[minmax(0,380px)_1fr]">
+            <div className={activeFilters ? "" : "grid gap-12 lg:grid-cols-[minmax(0,380px)_1fr]"}>
+              {!activeFilters && (
+                <section>
+                  <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">Swipe deck</h2>
+                  <SwipeDeck jobs={deck} />
+                </section>
+              )}
               <section>
-                <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">Swipe deck</h2>
-                <SwipeDeck jobs={deck} />
-              </section>
-              <section>
-                <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">All {allJobs.length} jobs</h2>
-                <JobBoard jobs={allJobs} />
+                <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">{activeFilters ? `${shownJobs.length} of ${allJobs.length} jobs` : `All ${allJobs.length} jobs`}</h2>
+                <JobBoard jobs={shownJobs} />
               </section>
             </div>
           )}

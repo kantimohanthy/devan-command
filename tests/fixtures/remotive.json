@@ -1,0 +1,4 @@
+{"0-legal-notice":"...","job-count":2,"jobs":[
+ {"id":2001,"url":"https://remotive.com/remote-jobs/software-dev/backend-dev-2001","title":"Backend Developer","company_name":"RemoteCo","category":"Software Development","job_type":"full_time","publication_date":"2026-11-20T10:00:00","candidate_required_location":"USA","salary":"$90k - $120k","description":"<p>You must be located in the United States.</p>"},
+ {"id":2002,"url":"https://remotive.com/remote-jobs/software-dev/ml-eng-2002","title":"ML Engineer","company_name":"EuroML","category":"Software Development","job_type":"contract","publication_date":"2026-11-21T10:00:00","candidate_required_location":"Europe","salary":"","description":"<p>Work from anywhere in Europe (CET ±2).</p>"}
+]}

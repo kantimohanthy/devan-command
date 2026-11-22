@@ -43,6 +43,20 @@ export async function setJobStatus(id: string, status: (typeof STATUSES)[number]
     .eq("id", input.id)
     .eq("owner", user.id);
   if (error) throw new Error("Could not update job.");
+  await supabase.from("job_events").insert({ job_id: input.id, kind: "status", detail: { to: input.status, by: "user" } });
+  revalidatePath("/");
+}
+
+export async function toggleShortlist(id: string, on: boolean) {
+  const input = z.object({ id: z.string().uuid(), on: z.boolean() }).parse({ id, on });
+  const { supabase, user } = await requireOwner();
+  const { error } = await supabase
+    .from("jobs")
+    .update({ shortlisted: input.on, shortlisted_at: input.on ? new Date().toISOString() : null })
+    .eq("id", input.id)
+    .eq("owner", user.id);
+  if (error) throw new Error("Could not update shortlist.");
+  await supabase.from("job_events").insert({ job_id: input.id, kind: input.on ? "shortlisted" : "unshortlisted", detail: { by: "user" } });
   revalidatePath("/");
 }
 
