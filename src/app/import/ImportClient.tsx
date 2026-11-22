@@ -34,14 +34,15 @@ const rowsOf = (doc: unknown, keys: string[]): unknown[] => {
   return [];
 };
 
-async function inBatches(rows: unknown[], fn: (b: unknown[]) => Promise<{ inserted: number; valid: number }>) {
-  let inserted = 0, valid = 0;
+async function inBatches(rows: unknown[], fn: (b: unknown[]) => Promise<{ inserted: number; valid: number; error?: string }>) {
+  let inserted = 0, valid = 0, error: string | undefined;
   for (let i = 0; i < rows.length; i += 150) {
     const r = await fn(rows.slice(i, i + 150));
     inserted += r.inserted;
     valid += r.valid;
+    if (r.error) error = r.error;
   }
-  return { inserted, valid };
+  return { inserted, valid, error };
 }
 
 export default function ImportClient() {
@@ -73,7 +74,8 @@ export default function ImportClient() {
       const a = await inBatches(apps, importOldOpportunities);
       add(`✅ Opportunities: ${a.inserted} added (${a.valid - a.inserted} already there).`);
       const j = await inBatches(jobs, importOldJobs);
-      add(`✅ Jobs: ${j.inserted} added (${j.valid - j.inserted} already tracked).`);
+      add(`✅ Jobs: ${j.inserted} added (${j.valid - j.inserted} already tracked or skipped).`);
+      if (j.error) add("⚠️ Some jobs were skipped: " + j.error);
       await finishImport(`${a.inserted} opportunities and ${j.inserted} jobs from the old kantimohanthy.com vault.`);
       add("Done. Open Opportunities to see them.");
     } catch (e) {

@@ -85,11 +85,24 @@ export async function importOldJobs(rows: unknown[]) {
   // skip rows already tracked (same URL, or same title+company)
   const { data: existing } = await supabase.from("jobs").select("url,title,company");
   const seen = new Set((existing ?? []).flatMap((e) => [e.url, `${e.title}|${e.company}`.toLowerCase()]).filter(Boolean));
-  const fresh = clean.filter((c) => !(c.url && seen.has(c.url)) && !seen.has(`${c.title}|${c.company}`.toLowerCase()));
+  const fresh = clean.filter((c) => {
+    const k = `${c.title}|${c.company}`.toLowerCase();
+    if ((c.url && seen.has(c.url)) || seen.has(k)) return false;
+    if (c.url) seen.add(c.url);
+    seen.add(k);
+    return true;
+  });
   if (!fresh.length) return { received: parsed.length, valid: clean.length, inserted: 0 };
   const { error, data } = await supabase.from("jobs").insert(fresh).select("id");
-  if (error) throw new Error("Job import failed: " + error.message);
-  return { received: parsed.length, valid: clean.length, inserted: data?.length ?? 0 };
+  if (!error) return { received: parsed.length, valid: clean.length, inserted: data?.length ?? 0 };
+  // batch failed: fall back to one-by-one so a single bad row can't block the rest
+  let inserted = 0;
+  let lastError = error.message;
+  for (const row of fresh) {
+    const r = await supabase.from("jobs").insert(row);
+    if (r.error) lastError = r.error.message; else inserted++;
+  }
+  return { received: parsed.length, valid: clean.length, inserted, error: inserted < fresh.length ? lastError : undefined };
 }
 
 export async function importOldOpportunities(rows: unknown[]) {
