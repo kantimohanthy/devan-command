@@ -38,25 +38,34 @@ export function extractEligibility(l: Pick<Listing, "countryRestrictions" | "loc
   else if (l.remote === true || /\bremote\b/i.test(loc)) office = "remote";
   else if (ONSITE.test(desc) || (loc && !/remote/i.test(loc))) office = "onsite";
 
+  // a country rule inside a benefits sentence ("ESPP … (US only)") is not a location rule
+  const BENEFIT = /\b(espp|stock|401\(?k\)?|benefit|insurance|health|dental|vision|pension|equity|perk|discount|pto|leave)\b/i;
   const lock = COUNTRY_LOCK.map(([re, label]) => {
-    const m = re.exec(both);
-    return m ? { label: label.replace("$1", (m[1] ?? "").toUpperCase()), text: snippet(both, re) } : null;
+    const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
+    for (let m = g.exec(both); m; m = g.exec(both)) {
+      const start = Math.max(both.lastIndexOf("\n", m.index), both.lastIndexOf(". ", m.index)) + 1;
+      const end = both.indexOf("\n", m.index) === -1 ? both.length : both.indexOf("\n", m.index);
+      const sentence = both.slice(start, end);
+      if (!BENEFIT.test(sentence)) return { label: label.replace("$1", (m[1] ?? "").toUpperCase()), text: snippet(both.slice(m.index - Math.min(m.index, 90)), re) };
+    }
+    return null;
   }).find(Boolean);
 
   let italy: ItalyStatus = "unknown";
   const countries = l.countryRestrictions;
 
-  if (lock) {
-    italy = "excluded";
-    evidence.push(`${lock.label}: “${lock.text}”`);
-  } else if (countries && countries.length > 0) {
+  if (countries && countries.length > 0) {
     if (countries.some((c) => /^(it|italy|italia)$/i.test(c.trim()))) {
-      italy = "confirmed";
+      italy = lock ? "possible" : "confirmed";
       evidence.push(`Source location restrictions include Italy: ${countries.join(", ")}`);
+      if (lock) evidence.push(`But the listing text says ${lock.label}: “${lock.text}” (conflict, review)`);
     } else {
       italy = "excluded";
       evidence.push(`Source location restrictions exclude Italy: ${countries.slice(0, 12).join(", ")}${countries.length > 12 ? "…" : ""}`);
     }
+  } else if (lock) {
+    italy = "excluded";
+    evidence.push(`${lock.label}: “${lock.text}”`);
   } else if (office !== "remote" && ITALY.test(loc)) {
     italy = "confirmed";
     evidence.push(`Office location in Italy: “${loc}”`);

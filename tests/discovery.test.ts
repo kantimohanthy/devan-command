@@ -65,6 +65,13 @@ describe("geographic eligibility", () => {
     expect(compensationText(null, "backed by Kleiner Perkins and raised more than $170 million in less than two years")).toBeNull();
     expect(compensationText(null, "The base salary range for this role is $120,000 - $150,000 per year.")).toMatch(/\$120,000 - \$150,000 per year/);
   });
+  it("live regression: a benefits line is not a location rule; the structured country list wins", () => {
+    const e = extractEligibility({ countryRestrictions: ["United States"], locationText: "Remote — United States", remote: true, descriptionText: "Stock Purchase Plan (ESPP) with discounted stock for eligible employees (US only).", timezoneText: null });
+    expect(e.italy).toBe("excluded");
+    expect(e.evidence[0]).toMatch(/restrictions exclude Italy: United States/);
+    const b = extractEligibility({ countryRestrictions: null, locationText: "Remote", remote: true, descriptionText: "Health insurance for US employees (US only). We hire anywhere in the world.", timezoneText: null });
+    expect(b.italy).toBe("confirmed");
+  });
   it("keeps unknowns unknown", () => {
     const e = extractEligibility({ countryRestrictions: null, locationText: null, remote: null, descriptionText: "Great team.", timezoneText: null });
     expect(e.italy).toBe("unknown");
