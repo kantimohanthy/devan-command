@@ -17,6 +17,13 @@ const STATUS_FILTERS: { id: string; label: string; match: (s: JobStatus) => bool
 ];
 const SORTS = { fit: "Best fit", new: "Newest", company: "Company" } as const;
 
+/** The money figure inside a stated-pay sentence, for the table column. */
+export function payShort(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const m = /(?:[$€£]|\b(?:usd|eur|gbp)\s?)\s?\d[\d,.]*\s?[kK]?(?:\s?(?:-|–|to)\s?(?:[$€£]|(?:usd|eur|gbp)\s?)?\s?\d[\d,.]*\s?[kK]?)?(?:\s?(?:per|\/)\s?(?:year|yr|annum|hour|hr|month))?/i.exec(text);
+  return m ? m[0].trim() : "See listing";
+}
+
 function FitBadge({ score }: { score: number }) {
   const tone = score >= 60 ? "text-void bg-sky" : score >= 40 ? "text-sky border border-sky/50" : "text-mist border border-line";
   return <span className={`num inline-flex h-7 w-9 items-center justify-center rounded-md text-[13px] font-semibold ${tone}`} title="Fit score">{score}</span>;
@@ -75,8 +82,8 @@ export default function JobsTable({ jobs, initialJob, initialStatus = "open" }: 
 
   return (
     <div>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div role="tablist" aria-label="Job status" className="flex gap-1 overflow-x-auto">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+        <div role="tablist" aria-label="Job status" className="flex flex-wrap gap-1">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.id}
@@ -89,8 +96,8 @@ export default function JobsTable({ jobs, initialJob, initialStatus = "open" }: 
             </button>
           ))}
         </div>
-        <div className="flex gap-2 lg:ml-auto">
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter by role, company, city" aria-label="Filter jobs" className="well min-w-0 flex-1 px-3 py-1.5 text-sm outline-none focus:border-sky lg:w-64" />
+        <div className="flex gap-2 xl:ml-auto">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter by role, company, city" aria-label="Filter jobs" className="well min-w-0 flex-1 px-3 py-1.5 text-sm outline-none focus:border-sky xl:w-64" />
           <select value={sort} onChange={(e) => setSort(e.target.value as keyof typeof SORTS)} aria-label="Sort jobs" className="well px-2 py-1.5 text-sm">
             {Object.entries(SORTS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
@@ -123,7 +130,7 @@ export default function JobsTable({ jobs, initialJob, initialStatus = "open" }: 
                   <p className="truncate text-sm text-snow/85">{j.location ?? j.mode}</p>
                   <ItalyChip s={j.italy_status} />
                 </div>
-                <p className={`hidden truncate text-sm md:block ${j.compensation ? "text-snow/85" : "text-mist"}`}>{j.compensation ? j.compensation.slice(0, 40) : "Not stated"}</p>
+                <p className={`hidden truncate text-sm md:block ${j.compensation ? "text-snow/85" : "text-mist"}`}>{payShort(j.compensation) ?? "Not stated"}</p>
                 <span className="hidden text-sm text-mist md:block">{STATUS_LABEL[j.status]}</span>
                 {star(j)}
               </li>
@@ -147,7 +154,8 @@ export default function JobsTable({ jobs, initialJob, initialStatus = "open" }: 
                 <FitBadge score={open.fit} />
                 <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-semibold leading-snug text-snow">{open.title}</h2>
-                  <p className="mt-0.5 text-sm text-mist">{open.company} · {open.location ?? open.mode}{open.posted ? ` · posted ${fmtDate(open.posted)}` : ""}</p>
+                  <p className="mt-0.5 line-clamp-1 text-sm text-mist" title={open.location ?? undefined}>{open.company} · {open.location ?? open.mode}</p>
+                  {open.posted && <p className="text-xs text-mist">Posted {fmtDate(open.posted)}</p>}
                 </div>
                 <button type="button" onClick={() => setOpenId(null)} aria-label="Close details" className="press grid h-8 w-8 place-items-center rounded-md text-mist hover:bg-raise hover:text-snow">✕</button>
               </div>

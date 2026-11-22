@@ -10,7 +10,8 @@ export type NextMove =
   | { kind: "review"; title: string; reason: string; href: string; jobId?: string }
   | { kind: "clear"; title: string; reason: string; href: string };
 
-const OPEN_OPP = new Set(["To review", "Preparing"]);
+// Anything not finished counts as open (imported trackers use varied status words)
+const DONE_OPP = new Set(["Applied", "Rejected", "Not eligible", "Skipped", "Accepted", "Interview"]);
 const dayMs = 86400000;
 
 /** Calendar days from today (Rome) to the deadline date: 0 = today, 1 = tomorrow. */
@@ -21,7 +22,7 @@ export function daysUntil(date: string, now = Date.now()): number {
 
 export function pickNextMove(jobs: MoveJob[], opps: MoveOpp[], now = Date.now()): NextMove {
   const urgent = opps
-    .filter((o) => o.deadline_date && OPEN_OPP.has(o.status) && o.category !== "Not eligible")
+    .filter((o) => o.deadline_date && !DONE_OPP.has(o.status) && o.category !== "Not eligible")
     .map((o) => ({ o, d: daysUntil(o.deadline_date!, now) }))
     .filter((x) => x.d >= 0 && x.d <= 3)
     .sort((a, b) => a.d - b.d)[0];

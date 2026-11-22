@@ -13,6 +13,17 @@ export const fmtDate = (d: string | null | undefined) =>
   d ? new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Rome" }).format(new Date(d)) : null;
 const UK = /\b(uk|united kingdom|england|scotland|wales|london|manchester|birmingham|edinburgh|bristol|leeds|cambridge|oxford|gb)\b/i;
 
+/** "Italy and 33 more" for long comma lists, keeping Italy visible when present. */
+export function shortList(text: string, max = 6): string {
+  const m = /^(.*?:\s*)?(.+)$/s.exec(text);
+  const head = m?.[1] ?? "";
+  const items = (m?.[2] ?? text).split(/,\s*/);
+  if (items.length <= max) return text;
+  const italy = items.find((x) => /^ital(y|ia)$/i.test(x.trim()));
+  const shown = italy ? [italy, ...items.filter((x) => x !== italy).slice(0, max - 1)] : items.slice(0, max);
+  return `${head}${shown.join(", ")} and ${items.length - shown.length} more`;
+}
+
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <>
@@ -31,7 +42,11 @@ export default function JobEvidence({ j }: { j: Job }) {
         <h3 className="text-[13px] font-medium text-mist">Where can you do it from</h3>
         <ul className="mt-2 space-y-1.5">
           {(e?.evidence ?? []).length ? (
-            e!.evidence!.map((x, i) => <li key={i} className="leading-relaxed text-snow/90">{x}</li>)
+            e!.evidence!.map((x, i) => (
+              <li key={i} className="leading-relaxed text-snow/90">
+                {x.length > 160 && x.includes(",") ? <details><summary className="cursor-pointer list-none">{shortList(x)} <span className="text-sky">Show all</span></summary><p className="mt-1 text-mist">{x}</p></details> : x}
+              </li>
+            ))
           ) : (
             <li className="text-mist">The listing gives no location rule. Treat it as unknown.</li>
           )}
@@ -40,8 +55,8 @@ export default function JobEvidence({ j }: { j: Job }) {
 
       <dl className="grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2">
         <Row k="Office" v={e?.office ? `${e.office}${e.officeLocation ? `, ${e.officeLocation}` : ""}` : "Unknown"} />
-        <Row k="Remote countries" v={e?.remoteCountries?.join(", ") ?? "Not stated"} />
-        <Row k="Time zone" v={e?.timezone ?? "Not stated"} />
+        <Row k="Remote countries" v={e?.remoteCountries ? shortList(e.remoteCountries.join(", ")) : "Not stated"} />
+        <Row k="Time zone" v={e?.timezone ? (e.timezone.split(",").length > 8 ? `${e.timezone.split(",").length} UTC offsets allowed` : e.timezone) : "Not stated"} />
         <Row k="Relocation" v={e?.relocation ?? "Not stated"} />
         <Row k="Pay" v={j.compensation ?? "Unknown"} />
         <Row k="Sponsorship" v={j.sponsorship ? `${e?.sponsorStance === "offered" ? "Offered" : e?.sponsorStance === "not_offered" ? "Not offered" : "Mentioned"}: “${j.sponsorship}”` : "Not stated"} />

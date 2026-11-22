@@ -32,6 +32,11 @@ describe("next move", () => {
     expect(m.kind).toBe("deadline");
     expect(m.reason).toMatch(/tomorrow/);
   });
+  it("treats imported status words as open, and today beats a shortlist", () => {
+    const m = pickNextMove(jobs, [{ id: "o", name: "GovAI", status: "Open", deadline_date: "2026-11-22", url: null, category: "AI safety" }], now);
+    expect(m.kind).toBe("deadline");
+    expect(m.reason).toMatch(/closes today/);
+  });
   it("ignores applied programmes, then prefers the shortlist over raw fit", () => {
     const m = pickNextMove(jobs, [{ id: "o", name: "GovAI", status: "Applied", deadline_date: "2026-11-23", url: null, category: "AI safety" }], now);
     expect(m).toMatchObject({ kind: "apply", jobId: "b" });

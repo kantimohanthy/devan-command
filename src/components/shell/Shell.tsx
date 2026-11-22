@@ -9,7 +9,7 @@ const MAIN: { id: NavId; label: string; href: string; icon: string }[] = [
   { id: "today", label: "Today", href: "/?tab=today", icon: "M3 12h4l3-8 4 16 3-8h4" },
   { id: "jobs", label: "Jobs", href: "/?tab=jobs", icon: "M4 7h16v12H4zM9 7V5h6v2" },
   { id: "masters", label: "Masters", href: "/?tab=masters", icon: "M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5" },
-  { id: "funding", label: "Fellowships & funding", href: "/?tab=funding", icon: "M12 3v18M17 7H9.5a3 3 0 000 6h5a3 3 0 010 6H6" },
+  { id: "funding", label: "Fellowships", href: "/?tab=funding", icon: "M12 3v18M17 7H9.5a3 3 0 000 6h5a3 3 0 010 6H6" },
   { id: "programmes", label: "Programmes", href: "/?tab=programmes", icon: "M5 4h14v16H5zM9 8h6M9 12h6M9 16h3" },
   { id: "notes", label: "Notepad", href: "/?tab=notes", icon: "M5 4h10l4 4v12H5zM15 4v4h4" },
 ];

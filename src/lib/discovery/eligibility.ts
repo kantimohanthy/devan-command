@@ -135,7 +135,11 @@ export function compensationText(structured: string | null, description: string)
   const re = new RegExp(PAY.source, "gi");
   for (let m = re.exec(description); m; m = re.exec(description)) {
     const around = description.slice(Math.max(0, m.index - 90), m.index + m[0].length + 60);
-    if (PAY_CONTEXT.test(around) && !NOT_PAY.test(around)) return around.replace(/\s+/g, " ").trim().slice(0, 300);
+    if (PAY_CONTEXT.test(around) && !NOT_PAY.test(around)) {
+      // keep the figure plus the words right before it ("base salary range is"), trimmed to word boundaries
+      const lead = description.slice(Math.max(0, m.index - 40), m.index).replace(/^\S*\s/, "");
+      return `${lead}${m[0]}`.replace(/\s+/g, " ").trim().slice(0, 300);
+    }
   }
   return null;
 }
