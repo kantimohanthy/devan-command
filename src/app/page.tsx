@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Orb from "@/components/Orb";
 import SwipeDeck from "@/components/SwipeDeck";
 import JobBoard from "@/components/JobBoard";
@@ -28,9 +29,13 @@ export default async function Command() {
     <main className="mx-auto max-w-5xl px-5 pb-24 pt-8">
       <header className="flex items-center justify-between">
         <span className="wordmark text-2xl">devan</span>
-        <form action={signOut}>
-          <button className="press text-sm text-mist hover:text-snow">Lock</button>
-        </form>
+        <nav className="flex items-center gap-5 text-sm">
+          <Link href="/opportunities" className="text-mist hover:text-snow">Masters &amp; fellowships</Link>
+          <Link href="/import" className="text-mist hover:text-snow">Import</Link>
+          <form action={signOut}>
+            <button className="press text-mist hover:text-snow">Lock</button>
+          </form>
+        </nav>
       </header>
 
       <section className="mt-6 flex flex-col items-center text-center">
