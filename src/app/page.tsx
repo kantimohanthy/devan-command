@@ -1,103 +1,96 @@
-import Image from "next/image";
+import Orb from "@/components/Orb";
+import SwipeDeck from "@/components/SwipeDeck";
+import JobBoard from "@/components/JobBoard";
+import { AddJobForm, NoteForm } from "@/components/Forms";
+import { requireOwner } from "@/lib/supabase/server";
+import { importStarterJobs, markNotificationRead, signOut } from "./actions";
+import type { Job, Note, Notification } from "@/lib/types";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+function greeting() {
+  const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Europe/Rome" }).format(new Date()));
+  return h < 5 ? "Still up, sir" : h < 12 ? "Good morning, sir" : h < 18 ? "Good afternoon, sir" : "Good evening, sir";
+}
+
+export default async function Command() {
+  const { supabase } = await requireOwner();
+  const [{ data: jobs }, { data: notes }, { data: notifs }] = await Promise.all([
+    supabase.from("jobs").select("id,title,company,location,mode,contract,url,posted,status,applied_at").order("posted", { ascending: false, nullsFirst: false }),
+    supabase.from("notes").select("id,body,created_at").order("created_at", { ascending: false }).limit(20),
+    supabase.from("notifications").select("id,kind,title,body,created_at,read_at").is("read_at", null).order("created_at", { ascending: false }).limit(10),
+  ]);
+  const all = (jobs ?? []) as Job[];
+  const count = (s: Job["status"]) => all.filter((j) => j.status === s).length;
+  const deck = all.filter((j) => j.status === "to_apply");
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="mx-auto max-w-5xl px-5 pb-24 pt-8">
+      <header className="flex items-center justify-between">
+        <span className="wordmark text-2xl">devan</span>
+        <form action={signOut}>
+          <button className="press text-sm text-mist hover:text-snow">Lock</button>
+        </form>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <section className="mt-6 flex flex-col items-center text-center">
+        <Orb size={220} />
+        <h1 className="mt-2 text-3xl font-semibold">{greeting()}.</h1>
+        <p className="mt-2 text-mist">
+          {deck.length} to review · {count("in_progress")} in progress · {count("applied")} applied · {count("interview")} interviews
+        </p>
+      </section>
+
+      {notifs && notifs.length > 0 && (
+        <section className="mt-10 flex flex-col gap-2">
+          {(notifs as Notification[]).map((n) => (
+            <form key={n.id} action={markNotificationRead.bind(null, n.id)}
+              className={`card flex items-center justify-between gap-3 px-4 py-3 ${n.kind === "warning" ? "border-maroon" : ""}`}>
+              <div>
+                <p className="font-medium">{n.title}</p>
+                {n.body && <p className="text-sm text-mist">{n.body}</p>}
+              </div>
+              <button className="press text-xs text-mist hover:text-snow">Dismiss</button>
+            </form>
+          ))}
+        </section>
+      )}
+
+      {all.length === 0 ? (
+        <section className="card mt-10 flex flex-col items-center gap-4 p-8 text-center">
+          <p>Your tracker is empty. Bring in the 42 jobs from 21–22 Nov?</p>
+          <form action={importStarterJobs}>
+            <button className="press rounded-xl bg-volt px-5 py-3 font-semibold text-void">Import my jobs</button>
+          </form>
+        </section>
+      ) : (
+        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,380px)_1fr]">
+          <section>
+            <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">Swipe deck</h2>
+            <SwipeDeck jobs={deck} />
+          </section>
+          <section className="mt-12 lg:mt-0">
+            <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">All applications</h2>
+            <JobBoard jobs={all} />
+          </section>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+
+      <div className="mt-16 grid gap-8 md:grid-cols-2">
+        <section>
+          <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">Track a job</h2>
+          <AddJobForm />
+        </section>
+        <section>
+          <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">Notepad</h2>
+          <NoteForm />
+          <ul className="mt-4 flex flex-col gap-2">
+            {((notes ?? []) as Note[]).map((n) => (
+              <li key={n.id} className="card whitespace-pre-wrap px-4 py-3 text-sm">{n.body}</li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </main>
   );
 }

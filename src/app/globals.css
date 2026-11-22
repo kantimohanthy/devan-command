@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-void: #050507;
+  --color-ink: #0d0e12;
+  --color-panel: #13151b;
+  --color-line: #23262f;
+  --color-snow: #f4f5f7;
+  --color-mist: #9aa0ab;
+  --color-sky: #8ec5ff;      /* soft, light blue — DEVAN's core */
+  --color-maroon: #7a1f2b;
+  --color-volt: #e6ff3a;     /* fluorescent yellow — actions */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono-display: "Major Mono Display", ui-monospace, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html, body { background: var(--color-void); color: var(--color-snow); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
+::selection { background: var(--color-volt); color: var(--color-void); }
+
+.wordmark { font-family: var(--font-mono-display); letter-spacing: 0.08em; }
+
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+.press { transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease; }
+.press:active { transform: scale(0.97); }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

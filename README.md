@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DEVAN — command center (kantimohanthy.com)
 
-## Getting Started
+Private, single-user career assistant. Next.js 15 on Vercel + Supabase (Postgres + Auth).
 
-First, run the development server:
+## Phase 1 (this commit)
+- Owner-only login (Supabase Auth, email allowlist via `DEVAN_OWNER_EMAIL`)
+- Jobs tracker with statuses, swipe deck (right = open & mark in progress, left = skip)
+- Notepad, in-site notifications, one-click import of the 42 jobs tracked on 21–22 Nov 2026
+- DEVAN look: living orb, Major Mono wordmark, black / white / soft blue / maroon / volt yellow
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Setup (one time)
+1. **Supabase** → SQL Editor → paste and run `supabase/migrations/0001_init.sql`.
+2. **Supabase** → Authentication → Users → *Add user* with your email and a strong password (auto-confirm).
+3. **Supabase** → Authentication → Providers/Sign In → **turn off "Allow new users to sign up"**.
+4. **Vercel** → Import this repo → Environment Variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase → Project Settings → API)
+   - `DEVAN_OWNER_EMAIL` (your login email)
+   - `ANTHROPIC_API_KEY` (server-only, used from Phase 4)
+5. Deploy, open the site, sign in, press **Import my jobs**.
+6. **Domain**: Vercel → Settings → Domains → add `kantimohanthy.com`, then set the DNS records Vercel shows in Cloudflare (DNS only / grey cloud).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Security checklist
+| Check | Status |
+|---|---|
+| No secrets in client code; only the public Supabase URL/anon key use `NEXT_PUBLIC_` | Verified in code |
+| App never uses the Supabase service-role key | Verified in code |
+| RLS enabled + forced on all tables, per-operation owner policies, anon revoked | In migration; verify in Supabase after running it |
+| Every page/action re-checks the session server-side (`requireOwner`), not just middleware | Verified in code |
+| Writes filter by `owner` as well as RLS (IDOR defence in depth) | Verified in code |
+| Inputs validated with zod; links limited to `https://` | Verified in code |
+| Sign-ups disabled in Supabase | **Manual step 3** |
+| Two-account test (second user sees nothing / gets 404) | **Manual, after deploy** |
+| Login rate limiting | Supabase Auth built-in limits; review in dashboard |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Roadmap
+2. Tailored CV + cover-letter generator on swipe-right
+3. Scheduled job search (Crustdata/Apify) + Gmail status tracking + morning/midnight digests
+4. DEVAN voice/chat assistant (Anthropic API, server-side)
+5. Form-filler for company application sites
