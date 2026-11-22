@@ -6,7 +6,7 @@ import type { Job } from "@/lib/types";
 const SOURCE_NAME: Record<string, string> = {
   himalayas: "Himalayas", weworkremotely: "We Work Remotely", remotive: "Remotive", hiringcafe: "HiringCafe", wttj: "Welcome to the Jungle",
   ycombinator: "Y Combinator Jobs", accel: "Accel portfolio", workinstartups: "Work in Startups", flexa: "Flexa", higherin: "Higherin", grb: "GRB",
-  milkround: "Milkround", prospects: "Prospects", visajobs: "VisaJobs.uk", boom: "Boom Supersonic", neuralink: "Neuralink (Greenhouse)",
+  milkround: "Milkround", remoteok: "Remote OK", linkedin: "LinkedIn", wellfound: "Wellfound", flexjobs: "FlexJobs", nodesk: "NoDesk", remoteco: "Remote.co", indeed: "Indeed", toptal: "Toptal", upwork: "Upwork", remoterocketship: "Remote Rocketship", workingnomads: "Working Nomads", hnhiring: "HN Who is Hiring", jobgether: "Jobgether", startupjobs: "Startup.jobs", underdog: "Underdog.io", fourdayweek: "4 Day Week", prospects: "Prospects", visajobs: "VisaJobs.uk", boom: "Boom Supersonic", neuralink: "Neuralink (Greenhouse)",
   unconventional: "Unconventional AI (Greenhouse)", figure: "Figure (Greenhouse)", colossal: "Colossal (Greenhouse)", manual: "Pasted link",
 };
 export const fmtDate = (d: string | null | undefined) =>

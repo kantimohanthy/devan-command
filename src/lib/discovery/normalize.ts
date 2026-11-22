@@ -85,6 +85,46 @@ export function fromRemotive(j: RemotiveJob): Listing | null {
   };
 }
 
+// ---------- Remote OK (public JSON API https://remoteok.com/api) ----------
+// Body is [legalNotice, ...jobs]. salary_min/max are USD integers; 0 means not published.
+export type RemoteOkJob = {
+  id?: string | number; slug?: string; epoch?: number | string; date?: string; company?: string; position?: string;
+  tags?: string[]; description?: string; location?: string; salary_min?: number; salary_max?: number; url?: string; apply_url?: string;
+};
+
+export function fromRemoteOk(j: RemoteOkJob): Listing | null {
+  const title = str(j.position), company = str(j.company);
+  if (!title || !company || j.id == null || j.id === "") return null;
+  const min = typeof j.salary_min === "number" && j.salary_min > 0 ? j.salary_min : null;
+  const max = typeof j.salary_max === "number" && j.salary_max > 0 ? j.salary_max : null;
+  const loc = str(j.location);
+  return {
+    sourceSlug: "remoteok",
+    externalId: String(j.id),
+    title,
+    company,
+    discoveryUrl: httpsOrNull(j.url), // Remote OK terms: link back and credit Remote OK
+    officialUrl: null, // apply_url usually routes through remoteok.com, not the employer requisition
+    locationText: loc ? `Remote — ${loc}` : "Remote",
+    countryRestrictions: null, // free-text location only; never treated as a structured list
+    timezoneText: null,
+    remote: true,
+    employmentType: null,
+    seniority: null,
+    salaryText: min || max ? `USD ${min ?? "?"}–${max ?? "?"} per year (Remote OK)` : null,
+    descriptionText: htmlToText(j.description ?? ""),
+    postedAt: iso(j.date) ?? iso(typeof j.epoch === "string" ? Number(j.epoch) : j.epoch),
+    expiresAt: null,
+    original: { location: j.location ?? null, tags: (j.tags ?? []).slice(0, 20), apply_url: j.apply_url ?? null },
+  };
+}
+
+/** Keeps listings whose tags or title match one of the saved interests. */
+export function remoteOkMatches(j: RemoteOkJob, interests: string[]): boolean {
+  const hay = [j.position ?? "", ...(j.tags ?? [])].join(" ").toLowerCase();
+  return interests.some((t) => hay.includes(t.toLowerCase()));
+}
+
 // ---------- We Work Remotely RSS ----------
 const tag = (xml: string, name: string) => {
   const m = new RegExp(`<${name}>([\\s\\S]*?)</${name}>`, "i").exec(xml);

@@ -61,6 +61,20 @@ export const SOURCES: SourceDef[] = [
     config: { endpoint: "https://remotive.com/api/remote-jobs?category=software-dev" },
   },
   {
+    slug: "remoteok",
+    name: "Remote OK",
+    kind: "board",
+    method: "api",
+    methodNote: "Public JSON API https://remoteok.com/api (latest postings, no key). DEVAN keeps only roles whose title or tags match the saved interests.",
+    homepage: "https://remoteok.com",
+    docs: "https://remoteok.com/api",
+    terms: "Link back to the Remote OK listing and mention Remote OK as the source. Personal, low-frequency use (DEVAN enforces 6h between syncs).",
+    hosts: ["remoteok.com", "remoteok.io"],
+    automated: true,
+    minHoursBetweenSyncs: 6,
+    config: { queries: ["dev", "engineer", "backend", "python", "javascript", "react", "node", "devops", "sysadmin", "network", "cloud", "machine learning", "ai", "data", "junior", "intern", "support"] },
+  },
+  {
     slug: "hiringcafe",
     name: "HiringCafe",
     kind: "board",
@@ -74,7 +88,7 @@ export const SOURCES: SourceDef[] = [
   },
   ...(
     [
-      ["wttj", "Welcome to the Jungle", "https://www.welcometothejungle.com", ["welcometothejungle.com", "app.welcometothejungle.com"]],
+      ["wttj", "Welcome to the Jungle", "https://www.welcometothejungle.com", ["welcometothejungle.com", "app.welcometothejungle.com", "otta.com"]],
       ["ycombinator", "Y Combinator Jobs", "https://www.ycombinator.com/jobs", ["ycombinator.com", "workatastartup.com"]],
       ["accel", "Accel portfolio jobs", "https://jobs.accel.com", ["jobs.accel.com"]],
       ["workinstartups", "Work in Startups", "https://workinstartups.com", ["workinstartups.com"]],
@@ -84,6 +98,22 @@ export const SOURCES: SourceDef[] = [
       ["milkround", "Milkround", "https://www.milkround.com", ["milkround.com"]],
       ["prospects", "Prospects", "https://www.prospects.ac.uk", ["prospects.ac.uk"]],
       ["visajobs", "VisaJobs.uk", "https://visajobs.uk", ["visajobs.uk"]],
+      // From "Top 10 Websites for Remote Jobs" sheet (22 Nov 2026)
+      ["linkedin", "LinkedIn Jobs", "https://www.linkedin.com/jobs/remote-jobs", ["linkedin.com"]],
+      ["wellfound", "Wellfound", "https://wellfound.com/role/remote-jobs", ["wellfound.com", "angel.co"]],
+      ["flexjobs", "FlexJobs (paid)", "https://www.flexjobs.com", ["flexjobs.com"]],
+      ["nodesk", "NoDesk", "https://nodesk.co/remote-jobs/", ["nodesk.co"]],
+      ["remoteco", "Remote.co", "https://remote.co/remote-jobs/", ["remote.co"]],
+      ["indeed", "Indeed", "https://it.indeed.com/jobs?sc=0kf%3Aattr(DSQF7)%3B", ["indeed.com", "it.indeed.com"]],
+      ["toptal", "Toptal (freelance)", "https://www.toptal.com/talent", ["toptal.com"]],
+      ["upwork", "Upwork (freelance)", "https://www.upwork.com/freelance-jobs", ["upwork.com"]],
+      ["remoterocketship", "Remote Rocketship", "https://www.remoterocketship.com", ["remoterocketship.com"]],
+      ["workingnomads", "Working Nomads", "https://www.workingnomads.com/jobs", ["workingnomads.com"]],
+      ["hnhiring", "Hacker News — Who is Hiring?", "https://news.ycombinator.com/submitted?id=whoishiring", ["news.ycombinator.com"]],
+      ["jobgether", "Jobgether", "https://jobgether.com", ["jobgether.com"]],
+      ["startupjobs", "Startup.jobs", "https://startup.jobs", ["startup.jobs"]],
+      ["underdog", "Underdog.io", "https://underdog.io", ["underdog.io"]],
+      ["fourdayweek", "4 Day Week", "https://4dayweek.io", ["4dayweek.io"]],
     ] as const
   ).map(([slug, name, homepage, hosts]) => ({
     slug,

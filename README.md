@@ -47,10 +47,11 @@ Registry: `src/lib/discovery/registry.ts` (versioned allowlist). Runtime state: 
 | Himalayas | Documented JSON API (search, page 1 per saved query) | Live-tested |
 | We Work Remotely | Public RSS, engineering categories only | Live-tested |
 | Remotive | Documented public API (software-dev), ≥6 h between syncs | Live-tested |
+| Remote OK | Public JSON API, filtered to saved interests, ≥6 h between syncs | Fixture-tested; live sync from the deployment pending |
 | HiringCafe | MCP `https://hiringcafe.com/api/mcp`, on-demand search only | Probe + search live-tested (no auth; tools `search_jobs`, `get_job_details`) |
 | Neuralink, Unconventional AI, Figure, Colossal | Greenhouse Job Board API (one adapter) | Live-tested |
 | Boom Supersonic | Moved to Rippling Recruiting; link import only (feed undocumented) | Link import live-tested |
-| WTTJ, YC Jobs, Accel, Work in Startups, Flexa, Higherin, GRB, Milkround, Prospects, VisaJobs.uk | Link import (ATS API or schema.org JobPosting) | Fixture-tested parser; no automated access verified |
+| WTTJ, YC Jobs, Accel, Work in Startups, Flexa, Higherin, GRB, Milkround, Prospects, VisaJobs.uk, plus the remote-jobs sheet boards (LinkedIn, Wellfound, FlexJobs, NoDesk, Remote.co, Indeed, Toptal, Upwork, Remote Rocketship, Working Nomads, HN Who is Hiring, Jobgether, Startup.jobs, Underdog.io, 4 Day Week) | Link import (ATS API or schema.org JobPosting) | Fixture-tested parser; no automated access verified |
 | UK sponsor register | GOV.UK Content API → register CSV, exact-name match or review | Live-tested |
 
 Rules enforced in code: refreshes never touch status, shortlist, notes, fit, CV or history; matching is by source id → ATS requisition id → official URL, never company + title; partial or failed syncs never close jobs; "Confirmed open from Italy" needs explicit evidence.

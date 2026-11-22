@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { fromGreenhouse, fromHimalayas, fromRemotive, parseWwrRss, findJobPosting, fromJobPosting } from "@/lib/discovery/normalize";
+import { fromGreenhouse, fromHimalayas, fromRemoteOk, remoteOkMatches, fromRemotive, parseWwrRss, findJobPosting, fromJobPosting } from "@/lib/discovery/normalize";
 import { extractEligibility, compensationText } from "@/lib/discovery/eligibility";
 import { atsRefFromUrl, normalizeUrl, requisitionKey } from "@/lib/discovery/keys";
 import { buildIndex, newJobRow, planListing, sourceFacts, PROTECTED_JOB_FIELDS } from "@/lib/discovery/plan";
@@ -18,8 +18,8 @@ const gh = JSON.parse(fx("greenhouse.json")).jobs.map((j: object) => fromGreenho
 const elig = (l: Parameters<typeof extractEligibility>[0]) => extractEligibility(l).italy;
 
 describe("registry", () => {
-  it("registers the 14 boards and 5 watch employers", () => {
-    expect(SOURCES.filter((s) => s.kind === "board")).toHaveLength(14);
+  it("registers the 30 boards and 5 watch employers", () => {
+    expect(SOURCES.filter((s) => s.kind === "board")).toHaveLength(30);
     expect(SOURCES.filter((s) => s.kind === "employer").map((s) => s.slug)).toEqual(["boom", "neuralink", "unconventional", "figure", "colossal"]);
     expect(SOURCES.filter((s) => s.method === "greenhouse").map((s) => s.config?.board)).toEqual(["neuralink", "unconventionalinc", "figureai", "colossalbiosciences"]);
     expect(sourceForHost("ats.rippling.com")?.slug).toBe("boom");
@@ -183,5 +183,29 @@ describe("commands", () => {
     const hits = applyFilters(rows, parseCommand("Find python or backend roles I can do from Rome").filters, [], sponsorStance);
     expect(hits.map((h) => h.company)).toEqual(["Acme EU"]);
     expect(hits.some((h) => h.company === "US Only Corp")).toBe(false);
+  });
+});
+
+describe("Remote OK", () => {
+  const body = JSON.parse(fx("remoteok.json")) as unknown[];
+  const jobs = body.slice(1) as Parameters<typeof fromRemoteOk>[0][];
+  it("skips the legal notice, keeps attribution, and leaves unpublished salary Unknown", () => {
+    const l = fromRemoteOk(jobs[0])!;
+    expect(l.sourceSlug).toBe("remoteok");
+    expect(l.discoveryUrl).toMatch(/^https:\/\/remoteok\.com\//);
+    expect(l.salaryText).toBeNull();
+    expect(fromRemoteOk(jobs[1])!.salaryText).toMatch(/USD 50000–70000/);
+  });
+  it("free-text location is never confirmation; US-only is excluded", () => {
+    expect(elig(fromRemoteOk(jobs[0])!)).not.toBe("confirmed");
+    expect(elig(fromRemoteOk(jobs[2])!)).toBe("excluded");
+  });
+  it("filters by saved interests", () => {
+    expect(jobs.filter((j) => remoteOkMatches(j, ["python", "junior"])).length).toBe(2);
+  });
+  it("new sheet boards resolve by host", () => {
+    expect(sourceForHost("www.wellfound.com")?.slug).toBe("wellfound");
+    expect(sourceForHost("otta.com")?.slug).toBe("wttj");
+    expect(sourceForHost("remoteok.com")?.slug).toBe("remoteok");
   });
 });

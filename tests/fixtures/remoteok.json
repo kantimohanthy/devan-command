@@ -1,0 +1,6 @@
+[
+ {"last_updated":1795000000,"legal":"API Terms of Service: Please link back to the URL on Remote OK and mention Remote OK as a source."},
+ {"id":"1135001","slug":"remote-junior-python-dev-acme-1135001","epoch":1795000000,"date":"2026-11-21T10:00:00+00:00","company":"Acme","position":"Junior Python Developer","tags":["python","dev"],"description":"<p>Remote team in Europe.</p>","location":"Europe","salary_min":0,"salary_max":0,"url":"https://remoteok.com/remote-jobs/1135001","apply_url":"https://remoteok.com/l/1135001"},
+ {"id":"1135002","slug":"remote-support-engineer-beta-1135002","epoch":1795000000,"date":"2026-11-21T11:00:00+00:00","company":"Beta","position":"Support Engineer","tags":["support","junior"],"description":"<p>Help customers.</p>","location":"","salary_min":50000,"salary_max":70000,"url":"https://remoteok.com/remote-jobs/1135002","apply_url":"https://remoteok.com/l/1135002"},
+ {"id":"1135003","slug":"remote-sales-gamma-1135003","epoch":1795000000,"date":"2026-11-21T12:00:00+00:00","company":"Gamma","position":"Account Executive","tags":["sales"],"description":"<p>You must be located in the United States.</p>","location":"USA","salary_min":0,"salary_max":0,"url":"https://remoteok.com/remote-jobs/1135003","apply_url":"https://remoteok.com/l/1135003"}
+]

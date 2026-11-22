@@ -1,7 +1,7 @@
 import "server-only";
 import { getJson, getText, guardedFetch, SourceError } from "./fetch";
 import { atsRefFromUrl } from "./keys";
-import { findJobPosting, fromAshby, fromGreenhouse, fromHimalayas, fromJobPosting, fromLever, fromRemotive, parseWwrRss, type GreenhouseJob, type HimalayasJob, type RemotiveJob } from "./normalize";
+import { findJobPosting, fromAshby, fromGreenhouse, fromHimalayas, fromJobPosting, fromLever, fromRemoteOk, fromRemotive, parseWwrRss, remoteOkMatches, type GreenhouseJob, type HimalayasJob, type RemoteOkJob, type RemotiveJob } from "./normalize";
 import { SOURCES, sourceBySlug, sourceForHost, type SourceDef } from "./registry";
 import { htmlToText } from "./text";
 import type { AdapterResult, Listing } from "./types";
@@ -11,7 +11,9 @@ const MAX_LISTINGS = 150;
 export async function runAdapter(src: SourceDef): Promise<AdapterResult> {
   switch (src.method) {
     case "api":
-      return src.slug === "himalayas" ? himalayas(src) : remotive(src);
+      if (src.slug === "himalayas") return himalayas(src);
+      if (src.slug === "remoteok") return remoteok(src);
+      return remotive(src);
     case "rss":
       return wwr();
     case "greenhouse":
@@ -44,6 +46,22 @@ async function remotive(src: SourceDef): Promise<AdapterResult> {
   const jobs = data.jobs ?? [];
   const listings = jobs.map(fromRemotive).filter((x): x is Listing => !!x);
   return { listings: listings.slice(0, MAX_LISTINGS), complete: data["job-count"] === jobs.length && listings.length <= MAX_LISTINGS, fetched: jobs.length, filteredOut: 0 };
+}
+
+async function remoteok(src: SourceDef): Promise<AdapterResult> {
+  const body = await getJson<unknown>("https://remoteok.com/api", 20000);
+  if (!Array.isArray(body)) throw new SourceError("Remote OK returned an unexpected shape (expected [legal notice, ...jobs]).");
+  const jobs = body.filter((x): x is RemoteOkJob => !!x && typeof x === "object" && "position" in x);
+  const interests = src.config?.queries ?? [];
+  const kept = interests.length ? jobs.filter((j) => remoteOkMatches(j, interests)) : jobs;
+  const listings = kept.map(fromRemoteOk).filter((x): x is Listing => !!x);
+  return {
+    listings: listings.slice(0, MAX_LISTINGS),
+    complete: false, // filtered by interests, so never a full list
+    fetched: jobs.length,
+    filteredOut: jobs.length - kept.length,
+    message: "Latest Remote OK feed, kept only roles matching saved interests. Credit: Remote OK.",
+  };
 }
 
 async function wwr(): Promise<AdapterResult> {
