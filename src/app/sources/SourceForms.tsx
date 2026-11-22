@@ -56,7 +56,8 @@ export function HiringCafePanel() {
       </button>
       <Result s={probe} />
       <form action={act} className="flex gap-2">
-        <input name="q" placeholder="On-demand search, e.g. junior backend Italy" className="min-w-0 flex-1 rounded-lg border border-line bg-ink px-3 py-1.5 text-sm outline-none focus:border-sky" />
+        <input name="q" aria-label="Role keywords" placeholder="Role, e.g. junior backend engineer" className="min-w-0 flex-1 rounded-lg border border-line bg-ink px-3 py-1.5 text-sm outline-none focus:border-sky" />
+        <input name="location" aria-label="Location" placeholder="Location, e.g. Italy" className="w-36 rounded-lg border border-line bg-ink px-3 py-1.5 text-sm outline-none focus:border-sky" />
         <button disabled={searching} className="press rounded-lg border border-line px-3 py-1.5 text-sm hover:border-sky">{searching ? "…" : "Search"}</button>
       </form>
       {s && (

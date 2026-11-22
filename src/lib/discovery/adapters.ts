@@ -98,16 +98,21 @@ export async function listingFromUrl(raw: string): Promise<{ listing: Listing; m
     if (l) return { listing: attribute(l), method: "schema.org JobPosting on the page" };
   }
   // last resort: page title only, everything else Unknown
-  const t = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(page.text)?.[1];
-  const title = t ? htmlToText(t).slice(0, 300) : null;
+  const meta = (prop: string) => new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']*)["']`, "i").exec(page.text)?.[1] ?? null;
+  const t = meta("og:title") ?? /<title[^>]*>([\s\S]*?)<\/title>/i.exec(page.text)?.[1];
+  let title = t ? htmlToText(t).slice(0, 300) : null;
+  const employer = board?.kind === "employer" ? board.name : null;
+  if (title && employer) title = title.replace(new RegExp(`\\s*[|–-]\\s*${employer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*$`, "i"), "");
+  const site = meta("og:site_name");
+  const company = employer ?? (site && !/recruit|careers|jobs|greenhouse|lever|ashby|workable|rippling/i.test(site) ? site : url.hostname.replace(/^www\./, ""));
   if (!title) throw new SourceError("No job data found on that page.");
   return {
-    method: "page title only (no structured job data)",
+    method: "page title and summary only (no structured job data; other fields Unknown)",
     listing: attribute({
       sourceSlug: board?.slug ?? "manual",
       externalId: url.toString(),
       title,
-      company: url.hostname.replace(/^www\./, ""),
+      company,
       discoveryUrl: url.toString(),
       officialUrl: url.toString(),
       locationText: null,
@@ -117,7 +122,7 @@ export async function listingFromUrl(raw: string): Promise<{ listing: Listing; m
       employmentType: null,
       seniority: null,
       salaryText: null,
-      descriptionText: htmlToText(/<meta[^>]+name="description"[^>]+content="([^"]*)"/i.exec(page.text)?.[1] ?? ""),
+      descriptionText: htmlToText(meta("og:description") ?? meta("description") ?? ""),
       postedAt: null,
       expiresAt: null,
       original: { note: "No structured data; fields are Unknown" },
@@ -165,7 +170,7 @@ export async function probeMcp(endpoint: string) {
   return { ...out, auth: "none", serverInfo: (init.body as { result?: { serverInfo?: unknown } })?.result?.serverInfo ?? null, toolsStatus: tools.status, tools: list };
 }
 
-export async function searchMcp(endpoint: string, query: string) {
+export async function searchMcp(endpoint: string, query: string, location?: string) {
   const init = await rpc(endpoint, { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "devan", version: "1.0" } } }, null);
   if (init.status >= 400) throw new SourceError(`HiringCafe MCP answered HTTP ${init.status}`);
   await rpc(endpoint, { jsonrpc: "2.0", method: "notifications/initialized" }, init.session).catch(() => null);
@@ -175,12 +180,14 @@ export async function searchMcp(endpoint: string, query: string) {
   if (!tool) throw new SourceError("HiringCafe MCP exposes no tools to this client.");
   const props = Object.keys(tool.inputSchema?.properties ?? {});
   const key = props.find((p) => /^(query|q|search|keywords?|title)$/i.test(p)) ?? props[0] ?? "query";
-  const r = await rpc(endpoint, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: tool.name, arguments: { [key]: query } } }, init.session);
+  const args: Record<string, string> = { [key]: query };
+  if (location && props.includes("location")) args.location = location;
+  const r = await rpc(endpoint, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: tool.name, arguments: args } }, init.session);
   const content = (r.body as { result?: { content?: { type: string; text?: string }[] }; error?: { message?: string } }) ?? {};
   if (content.error) throw new SourceError(`HiringCafe: ${content.error.message ?? "tool error"}`);
   const text = (content.result?.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("\n");
-  const links = [...new Set(text.match(/https:\/\/[^\s"'<>)\]]+/g) ?? [])].slice(0, 30);
-  return { tool: tool.name, argument: key, text: text.slice(0, 6000), links };
+  const links = [...new Set((text.match(/https:\/\/[^\s"'<>)\]]+/g) ?? []).map((u) => u.replace(/[?&]utm_[^#]*$/, "")))].slice(0, 30);
+  return { tool: tool.name, argument: Object.keys(args).join(" + "), text: text.slice(0, 6000), links };
 }
 
 export { sourceBySlug };

@@ -3,7 +3,7 @@
 
 export type SponsorStance = "offered" | "not_offered" | "mentioned" | "unknown";
 
-const NOT_OFFERED = /\b(?:(?:unable|not able|cannot|can't|can ?not|do not|don't|does not|will not|won't|no)\s+(?:to\s+)?(?:offer\s+|provide\s+)?(?:visa\s+)?sponsor(?:ship)?|sponsorship (?:is )?not (?:available|offered|provided)|without (?:the need for )?(?:visa )?sponsorship|must (?:already )?have (?:the )?right to work)\b/i;
+const NOT_OFFERED = /\b(?:(?:unable|not able|cannot|can't|can ?not|do not|don't|does not|will not|won't|no)\s+(?:to\s+)?(?:offer\s+|provide\s+)?(?:visa\s+)?sponsor(?:ship)?|sponsorship (?:is )?not (?:available|offered|provided)|without (?:the need for )?(?:visa )?sponsorship|without (?:the need for )?(?:company |employer )?assistance in (?:securing|obtaining) a visa|must (?:already )?have (?:the )?right to work|(?:us|u\.s\.) work authori[sz]ation is required)\b/i;
 const OFFERED = /\b(?:(?:visa )?sponsorship (?:is |will be )?(?:available|offered|provided|possible)|(?:we|this role|the company) (?:can|will|are able to|is able to|offers?) (?:offer |provide )?(?:visa )?sponsor(?:ship)?|skilled worker (?:visa )?sponsorship (?:available|offered)|open to sponsoring)\b/i;
 
 export function sponsorStance(text: string | null | undefined): SponsorStance {

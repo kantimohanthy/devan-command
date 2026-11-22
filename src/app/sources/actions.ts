@@ -24,7 +24,8 @@ export async function syncSource(slug: string): Promise<State> {
   const minMs = (src.minHoursBetweenSyncs ?? 1) * 3600_000;
   if (state?.last_attempt_at && Date.now() - Date.parse(state.last_attempt_at) < minMs) {
     const mins = Math.ceil((minMs - (Date.now() - Date.parse(state.last_attempt_at))) / 60000);
-    return { ok: false, message: `${src.name} allows a sync every ${src.minHoursBetweenSyncs}h. Try again in ${mins} min.` };
+    const every = minMs >= 3600_000 ? `${src.minHoursBetweenSyncs} h` : `${Math.round(minMs / 60000)} min`;
+    return { ok: false, message: `${src.name} allows one sync every ${every}. Try again in ${mins} min.` };
   }
 
   const startedAt = new Date().toISOString();
@@ -109,7 +110,8 @@ export async function searchHiringCafe(_: McpSearchState, form: FormData): Promi
   const q = z.string().trim().min(2).max(200).safeParse(form.get("q"));
   if (!q.success) return { ok: false, message: "Type what to search for." };
   try {
-    const r = await searchMcp(sourceBySlug("hiringcafe")!.config!.endpoint!, q.data);
+    const loc = z.string().trim().max(100).safeParse(form.get("location") ?? "");
+    const r = await searchMcp(sourceBySlug("hiringcafe")!.config!.endpoint!, q.data, loc.success && loc.data ? loc.data : undefined);
     return { ok: true, message: `On-demand search via tool “${r.tool}” (${r.argument}). Results are not imported until you add a link.`, text: r.text, links: r.links };
   } catch (e) {
     return { ok: false, message: msg(e) };

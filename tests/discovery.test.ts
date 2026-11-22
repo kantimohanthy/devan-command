@@ -141,6 +141,8 @@ describe("UK sponsorship", () => {
     expect(sponsorStance("We are unable to offer visa sponsorship.")).toBe("not_offered");
     expect(sponsorStance("Skilled Worker visa sponsorship available.")).toBe("offered");
     expect(sponsorStance("Nothing about it")).toBe("unknown");
+    // live regression (Colossal)
+    expect(sponsorStance("US work authorization is required without the need for company assistance in securing a visa.")).toBe("not_offered");
   });
   it("only exact normalized names are auto-matched; looser matches need review", () => {
     const rows = [
