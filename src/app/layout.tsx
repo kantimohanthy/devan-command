@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/inter";
+import "@fontsource-variable/ibm-plex-sans";
 import "@fontsource/major-mono-display";
 import "./globals.css";
 

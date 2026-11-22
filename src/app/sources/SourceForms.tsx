@@ -8,7 +8,7 @@ type State = { ok: boolean; message: string; detail?: string[] } | null;
 function Result({ s }: { s: State }) {
   if (!s) return null;
   return (
-    <p role="status" className={`mt-2 text-sm ${s.ok ? "text-volt" : "text-[#ff9aa8]"}`}>
+    <p role="status" className={`mt-2 text-sm ${s.ok ? "text-sky" : "text-rose"}`}>
       {s.message}
       {s.detail?.length ? <span className="block text-xs text-mist">{s.detail.join(" · ")}</span> : null}
     </p>
@@ -62,7 +62,7 @@ export function HiringCafePanel() {
       </form>
       {s && (
         <div className="text-sm">
-          <p className={s.ok ? "text-mist" : "text-[#ff9aa8]"}>{s.message}</p>
+          <p className={s.ok ? "text-mist" : "text-rose"}>{s.message}</p>
           {s.links?.length ? (
             <ul className="mt-2 space-y-1">
               {s.links.map((l) => (

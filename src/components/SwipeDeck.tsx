@@ -33,7 +33,7 @@ export default function SwipeDeck({ jobs }: { jobs: Job[] }) {
         ))}
       </AnimatePresence>
       <div className="absolute -bottom-14 left-0 right-0 flex justify-center gap-4">
-        <button onClick={() => decide(top, "left")} className="press rounded-full border border-line px-6 py-2 text-mist hover:border-maroon">
+        <button onClick={() => decide(top, "left")} className="press rounded-full border border-line px-6 py-2 text-mist hover:border-rose">
           ← Skip
         </button>
         <button onClick={() => decide(top, "right")} className="press rounded-full bg-volt px-6 py-2 font-semibold text-void">
@@ -64,9 +64,9 @@ function Card({ job, depth, onDecide }: { job: Job; depth: number; onDecide: (j:
       }}
     >
       <motion.div style={{ opacity: applyGlow }} className="pointer-events-none absolute inset-0 rounded-[1.25rem] ring-2 ring-volt" />
-      <motion.div style={{ opacity: skipGlow }} className="pointer-events-none absolute inset-0 rounded-[1.25rem] ring-2 ring-maroon" />
+      <motion.div style={{ opacity: skipGlow }} className="pointer-events-none absolute inset-0 rounded-[1.25rem] ring-2 ring-rose" />
       <div style={{ visibility: depth === 0 ? "visible" : "hidden" }}>
-        <p className="text-xs uppercase tracking-widest text-sky">{job.mode}{job.contract ? ` · ${job.contract}` : ""}</p>
+        <p className="text-sm text-sky">{job.mode}{job.contract ? ` · ${job.contract}` : ""}</p>
         <h3 className="mt-3 text-2xl font-semibold leading-tight">{job.title}</h3>
         <p className="mt-2 text-mist">{job.company}</p>
         {job.location && <p className="text-sm text-mist">{job.location}</p>}

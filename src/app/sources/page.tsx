@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Shell from "@/components/shell/Shell";
 import { requireOwner } from "@/lib/supabase/server";
 import { SOURCES, type SourceDef } from "@/lib/discovery/registry";
 import { HiringCafePanel, SyncButton, UrlImport } from "./SourceForms";
@@ -17,11 +17,11 @@ function connection(s: SourceDef, st: State | undefined, runs: Run[]) {
   if (s.method === "mcp") {
     const p = st?.probe as { auth?: string; tools?: unknown[]; error?: string } | null;
     if (!p) return { label: "Not tested", tone: "text-mist" };
-    if (p.error) return { label: "Probe failed", tone: "text-[#ff9aa8]" };
-    return { label: p.auth === "none" ? "Reachable · on-demand only" : `Auth ${p.auth}`, tone: p.auth === "none" ? "text-sky" : "text-[#ffcf70]" };
+    if (p.error) return { label: "Probe failed", tone: "text-rose" };
+    return { label: p.auth === "none" ? "Reachable · on-demand only" : `Auth ${p.auth}`, tone: p.auth === "none" ? "text-sky" : "text-amber" };
   }
-  if (okImport) return { label: s.automated ? "Connected" : "Link import working", tone: "text-volt" };
-  if (st?.last_error) return { label: "Error", tone: "text-[#ff9aa8]" };
+  if (okImport) return { label: s.automated ? "Connected" : "Link import working", tone: "text-sky" };
+  if (st?.last_error) return { label: "Error", tone: "text-rose" };
   return { label: s.automated ? "Not synced yet" : "Manual link import", tone: "text-mist" };
 }
 
@@ -52,12 +52,8 @@ export default async function SourcesPage() {
   ];
 
   return (
-    <main className="mx-auto max-w-5xl px-5 pb-24 pt-8">
-      <header className="flex items-center justify-between">
-        <Link href="/" className="wordmark text-2xl">devan</Link>
-        <Link href="/?tab=jobs" className="text-sm text-mist hover:text-snow">← Jobs</Link>
-      </header>
-      <h1 className="mt-10 text-3xl font-semibold">Sources</h1>
+    <Shell active="sources">
+      <h1 className="text-[28px] font-semibold tracking-tight">Sources</h1>
       <p className="mt-2 max-w-2xl text-mist">
         Where DEVAN looks, how, and what each source has produced. A failed or partial sync never closes a job. Jobs a full employer sync no longer lists are only flagged.
       </p>
@@ -66,7 +62,7 @@ export default async function SourcesPage() {
 
       {groups.map(([title, list]) => (
         <section key={title} className="mt-12">
-          <h2 className="mb-4 text-xs uppercase tracking-widest text-mist">{title}</h2>
+          <h2 className="mb-4 font-medium text-snow">{title}</h2>
           <ul className="flex flex-col gap-3">
             {list.map((s) => {
               const r = runsBy.get(s.slug) ?? [];
@@ -81,7 +77,7 @@ export default async function SourcesPage() {
                       <div className="flex flex-wrap items-baseline gap-x-3">
                         <a href={s.homepage} target="_blank" rel="noopener noreferrer" className="text-lg font-semibold hover:text-sky">{s.name}</a>
                         <span className={`text-sm ${c.tone}`}>{c.label}</span>
-                        <span className="text-xs uppercase tracking-widest text-mist">{s.method === "greenhouse" ? "Greenhouse API" : s.method === "manual" ? "Link import" : s.method.toUpperCase()}</span>
+                        <span className="text-xs text-mist">{s.method === "greenhouse" ? "Greenhouse API" : s.method === "manual" ? "Link import" : s.method.toUpperCase()}</span>
                       </div>
                       <p className="mt-1 text-sm text-mist">{s.methodNote}</p>
                       {s.terms && <p className="mt-1 text-xs text-mist">Rules followed: {s.terms}</p>}
@@ -99,7 +95,7 @@ export default async function SourcesPage() {
                     <div><dt className="text-xs text-mist">Coverage</dt><dd>{last ? (last.complete ? "Full list" : "Partial (never closes jobs)") : "—"}</dd></div>
                     <div><dt className="text-xs text-mist">Value so far</dt><dd>{v ? `${v.jobs} roles · ${v.shortlisted} shortlisted · ${v.interviews} interviews` : "—"}</dd></div>
                   </dl>
-                  {state?.last_error && <p className="mt-2 text-xs text-[#ff9aa8]">Last error: {state.last_error}</p>}
+                  {state?.last_error && <p className="mt-2 text-xs text-rose">Last error: {state.last_error}</p>}
                   {last?.message && <p className="mt-1 text-xs text-mist">{last.message}</p>}
                   {s.method === "mcp" && (
                     <>
@@ -113,6 +109,6 @@ export default async function SourcesPage() {
           </ul>
         </section>
       ))}
-    </main>
+    </Shell>
   );
 }

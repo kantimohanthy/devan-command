@@ -1,34 +1,59 @@
 @import "tailwindcss";
 
+/* DEVAN — mission control at night.
+   Deep navy ink (not black), the blue orb as the signature, amber only for urgency,
+   lime only for the one primary action on a screen. */
 @theme {
-  --color-void: #050507;
-  --color-ink: #0d0e12;
-  --color-panel: #13151b;
-  --color-line: #23262f;
-  --color-snow: #f4f5f7;
-  --color-mist: #9aa0ab;
-  --color-sky: #8ec5ff;      /* soft, light blue — DEVAN's core */
-  --color-maroon: #7a1f2b;
-  --color-volt: #e6ff3a;     /* fluorescent yellow — actions */
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-void: #0c1226;      /* page */
+  --color-ink: #101830;       /* inputs, wells */
+  --color-panel: #141c36;     /* raised surfaces */
+  --color-raise: #1a2444;     /* hover / selected */
+  --color-line: #25304f;      /* hairlines */
+  --color-snow: #e9eeff;      /* primary text */
+  --color-mist: #93a0c4;      /* secondary text */
+  --color-sky: #7aa7ff;       /* the orb, links, focus */
+  --color-amber: #ffb54a;     /* urgency */
+  --color-rose: #ff8a9a;      /* errors, "not open" */
+  --color-maroon: #6b2236;
+  --color-volt: #d9f35a;      /* the single primary action */
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono-display: "Major Mono Display", ui-monospace, monospace;
 }
 
 html, body { background: var(--color-void); color: var(--color-snow); }
-body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
-
-::selection { background: var(--color-volt); color: var(--color-void); }
-
-.wordmark { font-family: var(--font-mono-display); letter-spacing: 0.08em; }
-
-.card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  border: 1px solid var(--color-line);
-  border-radius: 1.25rem;
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss02";
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(122, 167, 255, 0.10), transparent 60%),
+    var(--color-void);
+  background-attachment: fixed;
 }
 
-.press { transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease; }
-.press:active { transform: scale(0.97); }
+::selection { background: var(--color-sky); color: var(--color-void); }
+
+.wordmark { font-family: var(--font-mono-display); letter-spacing: 0.08em; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Surfaces: two levels only, so hierarchy reads at a glance */
+.card { background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 14px; }
+.well { background: var(--color-ink); border: 1px solid var(--color-line); border-radius: 10px; }
+
+.press { transition: transform 120ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
+.press:active { transform: scale(0.98); }
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-sky);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Drawer and palette open with one short move that shows where they came from */
+@keyframes drawer-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes rise-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.drawer-in { animation: drawer-in 180ms ease-out; }
+.rise-in { animation: rise-in 160ms ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

@@ -1,3 +1,4 @@
+import { daysUntil } from "@/lib/next-move";
 import OpportunityStatus from "@/app/opportunities/OpportunityStatus";
 
 export type Opp = {
@@ -7,8 +8,7 @@ export type Opp = {
 };
 
 export function daysLeft(d: string | null) {
-  if (!d) return null;
-  return Math.ceil((new Date(d + "T23:59:59Z").getTime() - Date.now()) / 86400000);
+  return d ? daysUntil(d) : null;
 }
 
 export default function OpportunityList({ items }: { items: Opp[] }) {
@@ -21,7 +21,7 @@ export default function OpportunityList({ items }: { items: Opp[] }) {
           <li key={o.id} className="card p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-xs uppercase tracking-widest text-sky">{[o.category, o.type].filter(Boolean).join(" · ")}</p>
+                <p className="text-sm text-sky">{[o.category, o.type].filter(Boolean).join(" · ")}</p>
                 {o.url ? (
                   <a href={o.url} target="_blank" rel="noopener noreferrer" className="mt-1 block text-lg font-semibold hover:text-sky">{o.name}</a>
                 ) : (
@@ -29,7 +29,7 @@ export default function OpportunityList({ items }: { items: Opp[] }) {
                 )}
                 <p className="mt-1 text-sm text-mist">
                   {o.deadline ?? "No deadline"}
-                  {d !== null && d >= 0 ? <span className={d <= 14 ? "text-volt" : ""}> · {d} days left</span> : d !== null ? " · closed" : ""}
+                  {d !== null && d >= 0 ? <span className={d <= 14 ? "text-amber" : ""}> · {d === 0 ? "closes today" : d === 1 ? "closes tomorrow" : `${d} days left`}</span> : d !== null ? " · closed" : ""}
                   {o.verified ? " · ✓ verified" : ""}
                 </p>
               </div>
