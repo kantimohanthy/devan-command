@@ -37,3 +37,22 @@ Private, single-user career assistant. Next.js 15 on Vercel + Supabase (Postgres
 3. Scheduled job search (Crustdata/Apify) + Gmail status tracking + morning/midnight digests
 4. DEVAN voice/chat assistant (Anthropic API, server-side)
 5. Form-filler for company application sites
+
+## Discovery sources (Phase 2a)
+
+Registry: `src/lib/discovery/registry.ts` (versioned allowlist). Runtime state: `sources`, `source_runs`, `job_sources` (migration `0003_sources.sql`, additive, RLS forced).
+
+| Source | Method | Status (22 Nov 2026) |
+|---|---|---|
+| Himalayas | Documented JSON API (search, page 1 per saved query) | Live-tested |
+| We Work Remotely | Public RSS, engineering categories only | Live-tested |
+| Remotive | Documented public API (software-dev), ≥6 h between syncs | Live-tested |
+| HiringCafe | MCP `https://hiringcafe.com/api/mcp`, on-demand search only | Probe + search live-tested (no auth; tools `search_jobs`, `get_job_details`) |
+| Neuralink, Unconventional AI, Figure, Colossal | Greenhouse Job Board API (one adapter) | Live-tested |
+| Boom Supersonic | Moved to Rippling Recruiting; link import only (feed undocumented) | Link import live-tested |
+| WTTJ, YC Jobs, Accel, Work in Startups, Flexa, Higherin, GRB, Milkround, Prospects, VisaJobs.uk | Link import (ATS API or schema.org JobPosting) | Fixture-tested parser; no automated access verified |
+| UK sponsor register | GOV.UK Content API → register CSV, exact-name match or review | Live-tested |
+
+Rules enforced in code: refreshes never touch status, shortlist, notes, fit, CV or history; matching is by source id → ATS requisition id → official URL, never company + title; partial or failed syncs never close jobs; "Confirmed open from Italy" needs explicit evidence.
+
+Tests: `npm test` (vitest, fixtures in `tests/fixtures`).
