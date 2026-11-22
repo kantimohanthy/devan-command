@@ -55,6 +55,16 @@ describe("geographic eligibility", () => {
     expect(elig(gh[0])).toBe("excluded");
     expect(elig({ countryRestrictions: null, locationText: "Rome, Italy", remote: false, descriptionText: "", timezoneText: null })).toBe("confirmed");
   });
+  it("live regression: hedged worldwide wording with a US HQ is not a confirmation", () => {
+    const desc = "Headquarters: Remote - US Modern Health is a platform. While many roles may function from anywhere in the world—see individual job listing for more—US based team members who live outside.";
+    const e = extractEligibility({ countryRestrictions: null, locationText: "Anywhere in the World", remote: true, descriptionText: desc, timezoneText: null });
+    expect(e.italy).toBe("possible");
+    expect(e.evidence.join(" ")).toMatch(/hedged/);
+  });
+  it("live regression: funding amounts are never read as pay", () => {
+    expect(compensationText(null, "backed by Kleiner Perkins and raised more than $170 million in less than two years")).toBeNull();
+    expect(compensationText(null, "The base salary range for this role is $120,000 - $150,000 per year.")).toMatch(/\$120,000 - \$150,000 per year/);
+  });
   it("keeps unknowns unknown", () => {
     const e = extractEligibility({ countryRestrictions: null, locationText: null, remote: null, descriptionText: "Great team.", timezoneText: null });
     expect(e.italy).toBe("unknown");

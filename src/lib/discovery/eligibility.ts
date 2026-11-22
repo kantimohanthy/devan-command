@@ -65,7 +65,11 @@ export function extractEligibility(l: Pick<Listing, "countryRestrictions" | "loc
     evidence.push(`${office === "unknown" ? "Location" : "On-site/hybrid"} outside Italy: “${loc}”`);
   } else if (office === "remote") {
     const it = snippet(both, /\b(italy|italia)\b/i);
-    const ww = snippet(desc, WORLDWIDE_TEXT);
+    const wwRaw = snippet(desc, WORLDWIDE_TEXT);
+    // hedged wording ("many roles may…", "see individual listing") or a US-only HQ line never confirms
+    const hedged = !!wwRaw && /\b(may|might|some|many|certain|most|depending|see (?:the )?individual|case[- ]by[- ]case)\b/i.test(wwRaw);
+    const usHq = /\bheadquarters:\s*remote\s*-\s*(?:us|usa|united states)\b/i.test(desc);
+    const ww = wwRaw && !hedged && !usHq ? wwRaw : null;
     if (it) {
       italy = "confirmed";
       evidence.push(`Listing names Italy: “${it}”`);
@@ -73,8 +77,9 @@ export function extractEligibility(l: Pick<Listing, "countryRestrictions" | "loc
       italy = "confirmed";
       evidence.push(`Listing text says anywhere/worldwide: “${ww}”`);
     } else {
-      italy = EU_WIDE.test(both) || (countries && countries.length === 0) || /anywhere/i.test(loc) ? "possible" : "unknown";
-      if (countries && countries.length === 0) evidence.push("Source metadata says worldwide, but the listing text does not confirm it");
+      italy = EU_WIDE.test(both) || (countries && countries.length === 0) || /anywhere/i.test(loc) || wwRaw ? "possible" : "unknown";
+      if (wwRaw && !ww) evidence.push(`Worldwide wording is hedged or the HQ line says US: “${wwRaw}”`);
+      else if (countries && countries.length === 0) evidence.push("Source metadata says worldwide, but the listing text does not confirm it");
       else if (/anywhere/i.test(loc)) evidence.push(`Board region label only: “${loc}”`);
       else if (EU_WIDE.test(both)) evidence.push(`Region only (not a country list): “${snippet(both, EU_WIDE)}”`);
     }
@@ -111,11 +116,17 @@ export function experienceLevel(title: string, seniority: string | null): string
   return null; // Unknown — never guessed
 }
 
-const PAY = /(?:[$€£]\s?\d[\d,.]*\s?[kK]?(?:\s?(?:-|–|to)\s?[$€£]?\s?\d[\d,.]*\s?[kK]?)?(?:\s?(?:usd|eur|gbp))?(?:\s?(?:per|\/)\s?(?:year|yr|annum|hour|hr|month))?)|(?:\b(?:usd|eur|gbp)\s?\d[\d,.]*(?:\s?(?:-|–)\s?\d[\d,.]*)?)/i;
+const PAY = /(?:[$€£]\s?\d[\d,.]*\s?[kK]?(?!\s?(?:million|billion|bn|mn)\b)(?:\s?(?:-|–|to)\s?[$€£]?\s?\d[\d,.]*\s?[kK]?)?(?:\s?(?:usd|eur|gbp))?(?:\s?(?:per|\/)\s?(?:year|yr|annum|hour|hr|month))?)|(?:\b(?:usd|eur|gbp)\s?\d[\d,.]*(?:\s?(?:-|–)\s?\d[\d,.]*)?)/i;
+const PAY_CONTEXT = /\b(salary|pay|compensation|base|per (?:year|hour|annum|month)|\/\s?(?:yr|hr|hour|year)|stipend|ote|hourly|annual|range|wage|rate)\b/i;
+const NOT_PAY = /\b(raised|funding|valuation|million|billion|revenue|series [a-e]|investors?)\b/i;
 
 /** Compensation exactly as stated; null means Unknown. */
 export function compensationText(structured: string | null, description: string): string | null {
   if (structured && structured.trim()) return structured.trim().slice(0, 300);
-  const s = snippet(description, PAY, 200);
-  return s ? s.slice(0, 300) : null;
+  const re = new RegExp(PAY.source, "gi");
+  for (let m = re.exec(description); m; m = re.exec(description)) {
+    const around = description.slice(Math.max(0, m.index - 90), m.index + m[0].length + 60);
+    if (PAY_CONTEXT.test(around) && !NOT_PAY.test(around)) return around.replace(/\s+/g, " ").trim().slice(0, 300);
+  }
+  return null;
 }

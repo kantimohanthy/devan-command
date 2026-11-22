@@ -30,7 +30,7 @@ export const SOURCES: SourceDef[] = [
     terms: "Credit Himalayas with a link; Apply must use applicationLink; never republish to other boards. Data refreshes every 24h.",
     hosts: ["himalayas.app"],
     automated: true,
-    minHoursBetweenSyncs: 6,
+    minHoursBetweenSyncs: 0.25,
     config: { queries: ["python", "backend", "machine learning", "network engineer", "internship"] },
   },
   {
@@ -44,7 +44,7 @@ export const SOURCES: SourceDef[] = [
     terms: "Link back to the WWR listing. Personal, low-frequency use.",
     hosts: ["weworkremotely.com"],
     automated: true,
-    minHoursBetweenSyncs: 6,
+    minHoursBetweenSyncs: 0.25,
   },
   {
     slug: "remotive",
