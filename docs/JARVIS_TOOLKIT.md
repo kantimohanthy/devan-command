@@ -36,6 +36,14 @@ Use these references when relevant. Verify dependencies and integration status b
 | OpenSEO | 0.1.31 (source af3f995) | Web app + MCP at `/mcp` (85 tools); local dev `AUTH_MODE=local_noauth pnpm dev` after `pnpm run db:migrate:local` | All 73 local D1 migrations applied; app 200; MCP initialize, tools/list (85), `whoami` and `list_projects` work | No `DATAFORSEO_API_KEY` or `TREG_API_TOKEN` configured; ask before any credit-spending call |
 | AppFlowy | 0.15.1 Linux tarball (no published checksum; sha256 6290aa82…52f5a) | Desktop app; Markdown import | Launched under a virtual display to the Welcome screen | No official API/MCP for local desktop data. Community `appflowy-mcp` (PyPI) needs AppFlowy Cloud email/password: vet with SkillSpector and get Ujwal's go-ahead before use. Otherwise produce import-ready Markdown |
 
+### Current policy (set by Ujwal, 2026-11-22): free tools only
+Use **OpenWhisper, VoiceStudio and AppFlowy** (free, run locally) for now. **OpenSEO and Open Higgsfield are paused**: they need paid services (DataForSEO / a generation provider). Until Ujwal says otherwise, do not request their keys or spend; for SEO use free checks (public-page audits, Google Search Console, Lighthouse) and for visuals use free local options. Revisit after Ujwal has income from a job.
+
+Windows installers to use (official releases, verify SHA-256 before running):
+- OpenWhisper-AllInOne-Setup-2.8.98.exe — 45aa8705f2cbe1a61644532145df1e1303c85eb95b407455e60ae26270a01b0f (per-user, no admin)
+- VoiceStudio-0.5.8-win-x64.exe — 11238cb8b08ea38b9b4e8e3050cd950ee2a2d3af1856d54e5ce6fb877444ad34
+- AppFlowy-0.15.1-windows-x86_64.exe — no published checksum
+
 ### How to use these tools (standing workflow)
 
 1. Pick the tool by outcome; invoke it only through an interface that actually works in the current session (re-check, don't assume the table above still holds).
