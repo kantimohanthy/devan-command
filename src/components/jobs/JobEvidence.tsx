@@ -15,7 +15,7 @@ const UK = /\b(uk|united kingdom|england|scotland|wales|london|manchester|birmin
 
 /** "Italy and 33 more" for long comma lists, keeping Italy visible when present. */
 export function shortList(text: string, max = 6): string {
-  const m = /^(.*?:\s*)?(.+)$/s.exec(text);
+  const m = /^([\s\S]*?:\s*)?([\s\S]+)$/.exec(text);
   const head = m?.[1] ?? "";
   const items = (m?.[2] ?? text).split(/,\s*/);
   if (items.length <= max) return text;
