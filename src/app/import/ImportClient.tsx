@@ -77,7 +77,7 @@ export default function ImportClient() {
       add(`✅ Jobs: ${j.inserted} added (${j.valid - j.inserted} already tracked or skipped).`);
       if (j.error) add("⚠️ Some jobs were skipped: " + j.error);
       await finishImport(`${a.inserted} opportunities and ${j.inserted} jobs from the old kantimohanthy.com vault.`);
-      add("Done. Open Opportunities to see them.");
+      add("Done. Everything is on your home screen.");
     } catch (e) {
       add("❌ " + (e instanceof Error ? e.message : "Import failed"));
     } finally {

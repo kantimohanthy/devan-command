@@ -9,5 +9,5 @@ export async function setOpportunityStatus(id: string, status: string) {
   const { supabase, user } = await requireOwner();
   const { error } = await supabase.from("opportunities").update({ status: input.status }).eq("id", input.id).eq("owner", user.id);
   if (error) throw new Error("Could not update.");
-  revalidatePath("/opportunities");
+  revalidatePath("/");
 }
